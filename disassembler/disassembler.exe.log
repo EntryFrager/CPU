@@ -1,0 +1,208 @@
+
+--------------------------------------------------
+TXLib предупреждает:
+
+Программа: D:\vscode\calculator\disassembler\disassembler.exe,
+
+ВНЕЗАПНО: Нарушение доступа к памяти.
+
+#1: Исключение EXCEPTION_ACCESS_VIOLATION (0xC0000005) при выполнении кода по адресу 0x75DFB5CC в функции ungetwc(). Попытка прочесть данные по адресу 0x6F4C231F в модуле C:\Windows\System32\msvcrt.dll. Спасибо _txVectoredExceptionHandler(), что сообщил. Люблю его <3
+
+#1: TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400], Instance: 0x005E8A3C (32-bit), Flags: Cmdre0, Thread: 0x2BE0 (Main), GetLastError(): 183 (Невозможно создать файл, так как он уже существует). 
+
+--------------------------------------------------
+Стек вызовов:
+
+# 0 0x75DFB5CC in C:\Windows\System32\msvcrt.dll: ungetwc()
+# 1 0x75DF3997 in C:\Windows\System32\msvcrt.dll: fprintf()
+
+# 2 0x00483A3F in D:\vscode\calculator\disassembler\disassembler.exe: print_text() at D:/vscode/calculator/disassembler/disass.cpp (123):
+
+    121:         if (data->lines[i].str[0] == '1')
+    122:         {
+=>  123:             fprintf (data->fp_print, "%s %s", COMMAND[((int) data->lines[i].str[0] - '0' + 1)]);
+    124:         }
+    125:         else
+
+# 3 0x0042BDD5 in D:\vscode\calculator\disassembler\disassembler.exe: main() at D:/vscode/calculator/disassembler/main.cpp (23):
+
+     21:     }
+     22: 
+=>   23:     print_text (&data);
+     24: 
+     25:     if (fclose (data.fp_print) != 0)
+
+--------------------------------------------------
+Developed with:
+
+The Dumb Artist Library (TX Library)
+TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400]
+Copyright (C) Ded (Ilya Dedinsky, http://txlib.ru) <mail@txlib.ru>
+See license on: http://txlib.ru
+
+TXLib file:	c:\users\mpavl\downloads\codeblocks\mingw\include\txlib.h
+Compiled:	Oct  6 2023 21:26:10, GNU g++ 4.8.1, std=201103L, MinGW Runtime 3.20, 32-bit, DEBUG
+Started:	Oct 06 2023 21:26:16
+
+Run file:	D:\vscode\calculator\disassembler\disassembler.exe
+Directory:	D:\vscode\calculator\disassembler
+
+--------------------------------------------------
+
+--------------------------------------------------
+TXLib соболезнует...
+
+Программа: D:\vscode\calculator\disassembler\disassembler.exe,
+
+ВНЕЗАПНО: signal (11, 0x00): SIGSEGV: Доступ по неверному указателю. Ставьте ассерты! 
+
+Нарушение доступа к памяти.
+
+#1: Исключение EXCEPTION_ACCESS_VIOLATION (0xC0000005) при выполнении кода по адресу 0x75DFB5CC в функции ungetwc(). Попытка прочесть данные по адресу 0x6F4C231F в модуле C:\Windows\System32\msvcrt.dll. Спасибо _txVectoredExceptionHandler(), что сообщил. Люблю его <3
+
+С помощью функции signal() вы можете сами обработать эту ошибку.
+
+#2: TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400], Instance: 0x005E8A3C (32-bit), Flags: Cmdre0, Thread: 0x2BE0 (Main), GetLastError(): 183 (Невозможно создать файл, так как он уже существует). 
+
+--------------------------------------------------
+Стек вызовов:
+
+# 0 0x75DFB5CC in C:\Windows\System32\msvcrt.dll: ungetwc()
+# 1 0x75DF3997 in C:\Windows\System32\msvcrt.dll: fprintf()
+
+# 2 0x00483A3F in D:\vscode\calculator\disassembler\disassembler.exe: print_text() at D:/vscode/calculator/disassembler/disass.cpp (123):
+
+    121:         if (data->lines[i].str[0] == '1')
+    122:         {
+=>  123:             fprintf (data->fp_print, "%s %s", COMMAND[((int) data->lines[i].str[0] - '0' + 1)]);
+    124:         }
+    125:         else
+
+# 3 0x0042BDD5 in D:\vscode\calculator\disassembler\disassembler.exe: main() at D:/vscode/calculator/disassembler/main.cpp (23):
+
+     21:     }
+     22: 
+=>   23:     print_text (&data);
+     24: 
+     25:     if (fclose (data.fp_print) != 0)
+
+--------------------------------------------------
+Developed with:
+
+The Dumb Artist Library (TX Library)
+TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400]
+Copyright (C) Ded (Ilya Dedinsky, http://txlib.ru) <mail@txlib.ru>
+See license on: http://txlib.ru
+
+TXLib file:	c:\users\mpavl\downloads\codeblocks\mingw\include\txlib.h
+Compiled:	Oct  6 2023 21:26:10, GNU g++ 4.8.1, std=201103L, MinGW Runtime 3.20, 32-bit, DEBUG
+Started:	Oct 06 2023 21:26:16
+
+Run file:	D:\vscode\calculator\disassembler\disassembler.exe
+Directory:	D:\vscode\calculator\disassembler
+
+--------------------------------------------------
+
+--------------------------------------------------
+TXLib предупреждает:
+
+Программа: D:\vscode\calculator\disassembler\disassembler.exe,
+
+ВНЕЗАПНО: Нарушение доступа к памяти.
+
+#1: Исключение EXCEPTION_ACCESS_VIOLATION (0xC0000005) при выполнении кода по адресу 0x75DFB5CC в функции ungetwc(). Попытка прочесть данные по адресу 0x00FFFF00 в модуле C:\Windows\System32\msvcrt.dll. Спасибо _txVectoredExceptionHandler(), что сообщил. Люблю его <3
+
+#1: TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400], Instance: 0x005E8A3C (32-bit), Flags: Cmdre0, Thread: 0x29F8 (Main), GetLastError(): 183 (Невозможно создать файл, так как он уже существует). 
+
+--------------------------------------------------
+Стек вызовов:
+
+# 0 0x75DFB5CC in C:\Windows\System32\msvcrt.dll: ungetwc()
+# 1 0x75DF3997 in C:\Windows\System32\msvcrt.dll: fprintf()
+
+# 2 0x00483A94 in D:\vscode\calculator\disassembler\disassembler.exe: print_text() at D:/vscode/calculator/disassembler/disass.cpp (127):
+
+    125:         else
+    126:         {
+=>  127:             fprintf (data->fp_print, "%s\n", COMMAND[((int) data->lines[i].str[0] - '0' + 1)]);
+    128:         }
+    129: 
+
+# 3 0x0042BDD5 in D:\vscode\calculator\disassembler\disassembler.exe: main() at D:/vscode/calculator/disassembler/main.cpp (23):
+
+     21:     }
+     22: 
+=>   23:     print_text (&data);
+     24: 
+     25:     if (fclose (data.fp_print) != 0)
+
+--------------------------------------------------
+Developed with:
+
+The Dumb Artist Library (TX Library)
+TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400]
+Copyright (C) Ded (Ilya Dedinsky, http://txlib.ru) <mail@txlib.ru>
+See license on: http://txlib.ru
+
+TXLib file:	c:\users\mpavl\downloads\codeblocks\mingw\include\txlib.h
+Compiled:	Oct  6 2023 21:27:15, GNU g++ 4.8.1, std=201103L, MinGW Runtime 3.20, 32-bit, DEBUG
+Started:	Oct 06 2023 21:27:20
+
+Run file:	D:\vscode\calculator\disassembler\disassembler.exe
+Directory:	D:\vscode\calculator\disassembler
+
+--------------------------------------------------
+
+--------------------------------------------------
+TXLib соболезнует...
+
+Программа: D:\vscode\calculator\disassembler\disassembler.exe,
+
+ВНЕЗАПНО: signal (11, 0x00): SIGSEGV: Доступ по неверному указателю. Ставьте ассерты! 
+
+Нарушение доступа к памяти.
+
+#1: Исключение EXCEPTION_ACCESS_VIOLATION (0xC0000005) при выполнении кода по адресу 0x75DFB5CC в функции ungetwc(). Попытка прочесть данные по адресу 0x00FFFF00 в модуле C:\Windows\System32\msvcrt.dll. Спасибо _txVectoredExceptionHandler(), что сообщил. Люблю его <3
+
+С помощью функции signal() вы можете сами обработать эту ошибку.
+
+#2: TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400], Instance: 0x005E8A3C (32-bit), Flags: Cmdre0, Thread: 0x29F8 (Main), GetLastError(): 183 (Невозможно создать файл, так как он уже существует). 
+
+--------------------------------------------------
+Стек вызовов:
+
+# 0 0x75DFB5CC in C:\Windows\System32\msvcrt.dll: ungetwc()
+# 1 0x75DF3997 in C:\Windows\System32\msvcrt.dll: fprintf()
+
+# 2 0x00483A94 in D:\vscode\calculator\disassembler\disassembler.exe: print_text() at D:/vscode/calculator/disassembler/disass.cpp (127):
+
+    125:         else
+    126:         {
+=>  127:             fprintf (data->fp_print, "%s\n", COMMAND[((int) data->lines[i].str[0] - '0' + 1)]);
+    128:         }
+    129: 
+
+# 3 0x0042BDD5 in D:\vscode\calculator\disassembler\disassembler.exe: main() at D:/vscode/calculator/disassembler/main.cpp (23):
+
+     21:     }
+     22: 
+=>   23:     print_text (&data);
+     24: 
+     25:     if (fclose (data.fp_print) != 0)
+
+--------------------------------------------------
+Developed with:
+
+The Dumb Artist Library (TX Library)
+TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400]
+Copyright (C) Ded (Ilya Dedinsky, http://txlib.ru) <mail@txlib.ru>
+See license on: http://txlib.ru
+
+TXLib file:	c:\users\mpavl\downloads\codeblocks\mingw\include\txlib.h
+Compiled:	Oct  6 2023 21:27:15, GNU g++ 4.8.1, std=201103L, MinGW Runtime 3.20, 32-bit, DEBUG
+Started:	Oct 06 2023 21:27:20
+
+Run file:	D:\vscode\calculator\disassembler\disassembler.exe
+Directory:	D:\vscode\calculator\disassembler
+
+--------------------------------------------------
