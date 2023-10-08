@@ -20,7 +20,10 @@ int main ()
         fprintf (stderr, "%s", my_strerr (ERR_FOPEN));
     }
 
-    print_text (&data);
+    if ((code_error = print_text(&data)) != 0)
+    {
+        fprintf (stderr, "%s", my_strerr (code_error));
+    }
 
     if (fclose (data.fp_print) != 0)
     {

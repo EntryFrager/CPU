@@ -16,7 +16,7 @@ const char *COMMAND[] = {
     "in"
 };
 
-const int COMMAND_CNT = 10;
+const int COMMAND_CNT = 11;
 
 int input_text (TEXT* data)
 {
@@ -50,22 +50,22 @@ int input_text (TEXT* data)
         return ERR_FCLOSE;
     }
 
-    split_lines (data);
+    split_commands (data);
 
     return ERR_NO;
 }
 
-void split_lines (TEXT *data)
+void split_commands (TEXT *data)
 {   
     my_assert (data != NULL);
 
-    data->n_lines =  number_of_lines (data->buf, data->size_file);
+    data->n_comms =  number_of_lines (data->buf, data->size_file);
 
-    data->lines = (LINE *) calloc (data->n_lines, sizeof(LINE));
-    my_assert (data->lines != NULL);
+    data->cmd = (COMMANDS *) calloc (data->n_comms, sizeof(COMMANDS));
+    my_assert (data->cmd != NULL);
 
-    (data->lines)[0].str = data->buf;
-    (data->lines)[0].size_str = 1;
+    (data->cmd)[0].command = data->buf;
+    (data->cmd)[0].size_str = 1;
     int j = 1;
 
     for (size_t id = 1; id <= data->size_file; id++)
@@ -74,13 +74,13 @@ void split_lines (TEXT *data)
         {
             *(data->buf + id) = '\0';
             
-            (data->lines)[j].str = data->buf + (id + 1);
+            (data->cmd)[j].command = data->buf + (id + 1);
 
             j++;
         }
         else
         {
-            (data->lines)[j - 1].size_str++;
+            (data->cmd)[j - 1].size_str++;
         }
     }   
 }
@@ -114,27 +114,52 @@ size_t get_file_size (FILE *stream)
     return size_file;
 }
 
-void print_text (TEXT *data)
+int print_text (TEXT *data)
 {
-    for (size_t i = 0; i < data->n_lines; i++)
+    my_assert (data != NULL);
+    
+    for (size_t i = 0; i < data->n_comms; i++)
     {
+        int err = 0;
         for (int j = 0; j < COMMAND_CNT; j++)
         {
-            if (strncmp (data->lines[i].str, COMMAND[j], strlen (COMMAND[j])) == 0)
+            int cmd_len = strlen (COMMAND[j]);
+            if (strncmp (data->cmd[i].command, COMMAND[j], cmd_len) == 0)
             {
+                err++;
                 if (j == 2)
                 {
-                    fprintf (data->fp_print, "%d %s", j, (data->lines[i].str + 5));
+                    int value = 0;
+                    if (sscanf ((data->cmd[i].command + 5), "%d", &value) != 1)
+                    {
+                        return ERR_ARGC;
+                    }
+
+                    fprintf (data->fp_print, "%d %d\n", j, value);
                 }
-                else if ((i + 1) == data->n_lines)
+                else if (*(data->cmd[i].command + cmd_len + 1) == '\0')
                 {
-                    fprintf (data->fp_print, "%d", j);
+                    if ((i + 1) == data->n_comms)
+                    {
+                        fprintf (data->fp_print, "%d", j);
+                    }
+                    else
+                    {
+                        fprintf (data->fp_print, "%d\n", j);
+                    }
                 }
                 else
                 {
-                    fprintf (data->fp_print, "%d\n", j);
+                    return ERR_COMMAND;
                 }
+                
             }
         }
+        if (err != 1)
+        {
+            return ERR_COMMAND;
+        }
     }
+
+    return ERR_NO;
 }

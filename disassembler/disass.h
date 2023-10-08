@@ -7,12 +7,26 @@
 
 #include "D:\vscode\calculator\error.h"
 
-const int CODE_CNT = 10;
+enum COMMANDS_CODE {
+    HLT,
+    OUT,
+    PUSH,
+    ADD,
+    SUB,
+    MUL,
+    DIV,
+    SQRT,
+    SIN,
+    COS,
+    IN
+};
+
+const int COMMAND_CNT = 11;
 
 typedef struct {
-    size_t size_str = 0;
-    char *str = NULL;
-} LINE;
+    int command = 0;
+    int argc = 0;
+} COMMANDS;
 
 typedef struct {
     const char *file_name_input = NULL;
@@ -24,14 +38,14 @@ typedef struct {
     char *buf = NULL;
 
     size_t size_file = 0;
-    size_t n_lines = 0;
+    size_t n_comms = 0;
 
-    LINE *lines = NULL;
+    COMMANDS *cmd = NULL;
 } TEXT;
 
 int input_text (TEXT *data);
 
-void split_lines (TEXT *data);
+int split_commands (TEXT *data);
 
 void print_text (TEXT *data);
 

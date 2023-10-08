@@ -28,7 +28,7 @@ const int COMMAND_CNT = 11;
 typedef struct {
     int command = 0;
     int argc = 0;
-} COMMS;
+} COMMANDS;
 
 typedef struct {
     const char *file_name_input = NULL;
@@ -37,12 +37,12 @@ typedef struct {
     FILE *fp_input = NULL;
     FILE *fp_print = NULL;
 
-    int *buf = NULL;
+    char *buf = NULL;
 
     size_t size_file = 0;
     size_t n_comms = 0;
 
-    COMMS *commands = NULL;
+    COMMANDS *cmd = NULL;
 } TEXT;
 
 int input_text (TEXT *data);

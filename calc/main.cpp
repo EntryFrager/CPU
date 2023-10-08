@@ -23,12 +23,17 @@ int main ()
         fprintf (stderr, "%s", my_strerr (ERR_FOPEN));
     }
 
-    calc_func (&stack, &data);
+    if ((code_error = calc_func (&stack, &data)) != ERR_NO)
+    {
+        fprintf (stderr, "%s", my_strerr (code_error));
+    }
 
     if (fclose (data.fp_print) != 0)
     {
         fprintf (stderr, "%s", my_strerr (ERR_FCLOSE));
     }
+
+    stack_dtor (&stack);
 
     return 0;
 }

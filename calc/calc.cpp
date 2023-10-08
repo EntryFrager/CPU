@@ -2,6 +2,8 @@
 
 static size_t number_of_lines (const char *data, const size_t size);
 
+static char *move_point (TEXT *data, const char *buf);
+
 int input_text (TEXT* data)
 {
     my_assert (data != NULL);
@@ -17,16 +19,17 @@ int input_text (TEXT* data)
 
     data->size_file = get_file_size (data->fp_input);
 
-    data->buf = (int *) calloc (data->size_file, sizeof (char));
+    data->buf = (char *) calloc (data->size_file + 1, sizeof (char));
     my_assert (data->buf != NULL);
 
-    int a = 0;
+    size_t read_size = fread (data->buf, sizeof (char), data->size_file, data->fp_input);
 
-    do {
-        fscanf (data->fp_input, "%d", &a);
+    if (read_size != data->size_file)
+    {
+        return ERR_FREAD;
+    }
 
-        data->buf[data->n_comms++] = a;
-    } while (a != 0);
+    *(data->buf + data->size_file) = '\0';
 
     if (fclose (data->fp_input) != 0)
     {
@@ -42,20 +45,66 @@ void split_commands (TEXT *data)
 {   
     my_assert (data != NULL);
 
-    data->commands = (COMMS *) calloc (data->n_comms, sizeof(COMMS));
-    my_assert (data->commands != NULL);
+    data->n_comms =  number_of_lines (data->buf, data->size_file);
 
-    for (size_t i = 0; i < data->n_comms; i++)
+    data->cmd = (COMMANDS *) calloc (data->n_comms, sizeof(COMMANDS));
+    my_assert (data->cmd != NULL);
+
+    char buf[256] = "";
+
+    for (size_t id = 0; id < data->n_comms; id++)
     {
-        data->commands[i].command = data->buf[i];
+        sscanf (data->buf, "%d", &data->cmd[id].command);
 
-        if (data->buf[i] == 2)
+        sprintf (buf, "%d", data->cmd[id].command);
+        data->buf = move_point (data, buf);     
+
+        if (data->cmd[id].command == PUSH)
         {
-            data->commands[i].argc = data->buf[i++];
+            sscanf (data->buf, "%d", &data->cmd[id].argc);
+
+            sprintf (buf, "%d", data->cmd[id].argc);
+            data->buf = move_point (data, buf);  
         }
-    }  
+        else
+        {
+            data->cmd[id].argc = -1;
+        }
+    }   
 }
 
+static char *move_point (TEXT *data, const char *buf)
+{
+    my_assert (data != NULL);
+    my_assert (buf != NULL);
+
+    int len = strlen (buf);
+    data->buf += len + 1;
+
+    while (*data->buf == ' ' || *data->buf == '\n')
+    {
+        data->buf++;
+    }   
+
+    return data->buf;
+}
+
+static size_t number_of_lines (const char *data, const size_t size)
+{
+    my_assert (data != NULL);
+
+    size_t n = 1;
+
+    for (size_t i = 1; i < size; i++)
+    {
+        if (data[i] == '\n' && data[i - 1] != '\n')
+        {
+            n++;
+        }
+    }
+
+    return n;
+}
 
 size_t get_file_size (FILE *stream)
 {
@@ -68,27 +117,28 @@ size_t get_file_size (FILE *stream)
 
     return size_file;
 }
-
 int calc_func (STACK *stack, TEXT *data)
 {
+    assert_stack (stack);
+    my_assert (data != NULL);
+
     fprintf (data->fp_print, "Это программа, выполняющая небольшую часть функций калькулятора.\n");
 
     ELEMENT a = 0;
     ELEMENT b = 0;
-    int value = 0;
 
-    for (size_t i = 0; i < data->n_comms; i++)
+    for (size_t id = 0; id < data->n_comms; id++)
     {
-        switch (data->commands[i].command)
+        switch (data->cmd[id].command)
         {
             case HLT:
                 fprintf (data->fp_print, "Расчёт окончен.\n");
-                return 0;
+                return ERR_NO;
             case OUT:
-                fprintf (data->fp_print, "%d\n", stack_pop (stack));
+                fprintf (data->fp_print, "Ответ: %d\n", stack_pop (stack));
                 break;
             case PUSH:
-                stack_push (stack, data->commands[i].argc);
+                stack_push (stack, data->cmd[id].argc);
                 break;
             case ADD:
                 a = stack_pop (stack);
@@ -133,8 +183,10 @@ int calc_func (STACK *stack, TEXT *data)
                 scanf ("%d", &a);
                 stack_push (stack, (ELEMENT) a);
                 break;
+            default:
+                return ERR_COMMAND;
         }
     }
 
-    return 1;
+    return ERR_NO;
 }

@@ -9,8 +9,9 @@
 
 typedef struct {
     size_t size_str = 0;
-    char *str = NULL;
-} LINE;
+    char *command = NULL;
+    int argc = 0;
+} COMMANDS;
 
 typedef struct {
     const char *file_name_input = NULL;
@@ -22,16 +23,16 @@ typedef struct {
     char *buf = NULL;
 
     size_t size_file = 0;
-    size_t n_lines = 0;
+    size_t n_comms = 0;
 
-    LINE *lines = NULL;
+    COMMANDS *cmd = NULL;
 } TEXT;
 
 int input_text (TEXT *data);
 
-void split_lines (TEXT *data);
+void split_commands (TEXT *data);
 
-void print_text (TEXT *data);
+int print_text (TEXT *data);
 
 size_t get_file_size (FILE *stream);
 

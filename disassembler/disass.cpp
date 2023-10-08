@@ -2,18 +2,20 @@
 
 static size_t number_of_lines (const char *data, const size_t size);
 
+static char *move_point (TEXT *data, const char *buf);
+
 const char *COMMAND[] = {
     "hlt",
-    "out\n",
+    "out",
     "push",
-    "add\n",
-    "sub\n",
-    "mul\n",
-    "div\n",
-    "sqrt\n",
-    "sin\n",
-    "cos\n",
-    "in\n"
+    "add",
+    "sub",
+    "mul",
+    "div",
+    "sqrt",
+    "sin",
+    "cos",
+    "in"
 };
 
 int input_text (TEXT* data)
@@ -48,39 +50,68 @@ int input_text (TEXT* data)
         return ERR_FCLOSE;
     }
 
-    split_lines (data);
+    int code_error = split_commands (data);
 
-    return ERR_NO;
+    return code_error;
 }
 
-void split_lines (TEXT *data)
+int split_commands (TEXT *data)
 {   
     my_assert (data != NULL);
 
-    data->n_lines =  number_of_lines (data->buf, data->size_file);
+    data->n_comms =  number_of_lines (data->buf, data->size_file);
 
-    data->lines = (LINE *) calloc (data->n_lines, sizeof(LINE));
-    my_assert (data->lines != NULL);
+    data->cmd = (COMMANDS *) calloc (data->n_comms, sizeof(COMMANDS));
+    my_assert (data->cmd != NULL);
 
-    (data->lines)[0].str = data->buf;
-    (data->lines)[0].size_str = 1;
-    int j = 1;
+    char buf[256] = "";
 
-    for (size_t id = 1; id <= data->size_file; id++)
+    for (size_t id = 0; id < data->n_comms; id++)
     {
-        if (data->buf[id] == '\n' && data->buf[id - 1] != '\n')
+        if (sscanf (data->buf, "%d", &data->cmd[id].command) != 1)
         {
-            *(data->buf + id) = '\0';
-            
-            (data->lines)[j].str = data->buf + (id + 1);
+            return ERR_COMMAND;
+        }
 
-            j++;
+        sprintf (buf, "%d", data->cmd[id].command);
+        data->buf = move_point (data, buf);     
+
+        if (data->cmd[id].command == PUSH)
+        {
+            if (sscanf (data->buf, "%d", &data->cmd[id].argc) != 1)
+            {
+                return ERR_ARGC;
+            }
+
+            sprintf (buf, "%d", data->cmd[id].argc);
+            data->buf = move_point (data, buf);  
+        }
+        else if (data->cmd[id].command >= HLT && data->cmd[id].command <= IN)
+        {
+            data->cmd[id].argc = -1;
         }
         else
         {
-            (data->lines)[j - 1].size_str++;
+            return ERR_COMMAND;
         }
     }   
+    return ERR_NO;
+}
+
+static char *move_point (TEXT *data, const char *buf)
+{
+    my_assert (data != NULL);
+    my_assert (buf != NULL);
+
+    int len = strlen (buf);
+    data->buf += len + 1;
+
+    while (*data->buf == ' ' || *data->buf == '\n')
+    {
+        data->buf++;
+    }   
+
+    return data->buf;
 }
 
 static size_t number_of_lines (const char *data, const size_t size)
@@ -114,15 +145,21 @@ size_t get_file_size (FILE *stream)
 
 void print_text (TEXT *data)
 {
-    for (size_t i = 0; i < data->n_lines; i++)
+    my_assert (data != NULL);
+    
+    for (size_t id = 0; id < data->n_comms; id++)
     {
-        if (data->lines[i].str[0] == '2')
+        if (data->cmd[id].command == 2)
+        {   
+            fprintf (data->fp_print, "%s %d\n", COMMAND[data->cmd[id].command], (data->cmd[id].argc));
+        }
+        else if (data->cmd[id].command == 0)
         {
-            fprintf (data->fp_print, "%s %s", COMMAND[(int) (data->lines[i].str[0] - '0')], (data->lines[i].str + 2));
+            fprintf (data->fp_print, "%s", COMMAND[data->cmd[id].command]);
         }
         else
         {
-            fprintf (data->fp_print, "%s", COMMAND[(int) (data->lines[i].str[0] - '0')]);
+            fprintf (data->fp_print, "%s\n", COMMAND[data->cmd[id].command]);
         }
     }
 }

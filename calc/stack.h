@@ -31,12 +31,6 @@ static int CODE_ERROR = 0;                                                      
     }                                                                   \
 }
 
-
-/*#define my_assert(expr) if (!(expr)) {                                                                      \
-    fprintf(stderr, "%s %s:%d: My assertion failed: \"" #expr "\"\n", __FILE__, __func__, __LINE__);        \
-    exit (1);                                                                                               \
-}*/
-
 typedef int ELEMENT;                                                                                                    ///< The type of stack elements.
 
 const ELEMENT STACK_VALUE_VENOM = -100000;                                                                              ///< Variable containing poison

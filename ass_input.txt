@@ -1,5 +1,11 @@
 in
 in
-add
+mul
+push 4
+in
+in
+mul
+mul
+sub
 out
 hlt
