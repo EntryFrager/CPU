@@ -1,6 +1,18 @@
-push 4
-push rcx
+in
+in
+in
 pop rax
-pop
+pop rbx
+pop rcx
+push rbx
+push rbx
+mul
+push 4
+push rax
+push rcx
+mul
+mul
+sub
 out
+pop rdx
 hlt

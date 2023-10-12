@@ -1,0 +1,177 @@
+
+--------------------------------------------------
+TXLib соболезнует...
+
+Программа: D:\vscode\calculator\calc\calc.exe,
+
+ВНЕЗАПНО: signal (22, 0x00): SIGABRT: Аварийное завершение программы, вызвана функция abort(). 
+
+С помощью функции signal() вы можете сами обработать эту ошибку.
+
+#1: TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400], Instance: 0x0050831C (32-bit), Flags: Cmdre0, Thread: 0x390C (Main), GetLastError(): 183 (Невозможно создать файл, так как он уже существует). 
+
+--------------------------------------------------
+Стек вызовов:
+
+# 0 0x00412EE8 in D:\vscode\calculator\calc\calc.exe: _txOnSignal() at c:/users/mpavl/downloads/codeblocks/mingw/include/txlib.h (11006)
+# 1 0x76D371F1 in C:\Windows\System32\msvcrt.dll: raise()
+# 2 0x76D3B69B in C:\Windows\System32\msvcrt.dll: abort()
+
+# 3 0x00402501 in D:\vscode\calculator\calc\calc.exe: stack_pop() at D:/vscode/calculator/include/stack.cpp (133):
+
+    131: {
+    132:     assert_stack (stk);
+=>  133:     my_assert (stk->position > 0);
+    134:     
+    135:     if (stk->position < stk->size / HST_DOWN)
+
+# 4 0x00401FD6 in D:\vscode\calculator\calc\calc.exe: calc_func() at D:/vscode/calculator/calc/calc.cpp (224):
+
+    222:                 break;
+    223:             case (POP + (1 << 5)):
+=>  224:                 REG_VALUE[data->cmd[id].reg - 1] = stack_pop (stack);
+    225: 
+    226:                 break;
+
+# 5 0x0040159D in D:\vscode\calculator\calc\calc.exe: main() at D:/vscode/calculator/calc/main.cpp (26):
+
+     24:     }
+     25: 
+=>   26:     if ((code_error = calc_func (&stack, &data)) != ERR_NO)
+     27:     {
+     28:         fprintf (stderr, "%s", my_strerr (code_error));
+
+--------------------------------------------------
+Developed with:
+
+The Dumb Artist Library (TX Library)
+TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400]
+Copyright (C) Ded (Ilya Dedinsky, http://txlib.ru) <mail@txlib.ru>
+See license on: http://txlib.ru
+
+TXLib file:	c:\users\mpavl\downloads\codeblocks\mingw\include\txlib.h
+Compiled:	Oct 12 2023 17:29:48, GNU g++ 4.8.1, std=201103L, MinGW Runtime 3.20, 32-bit, DEBUG
+Started:	Oct 12 2023 17:42:43
+
+Run file:	D:\vscode\calculator\calc\calc.exe
+Directory:	D:\vscode\calculator\calc
+
+--------------------------------------------------
+
+--------------------------------------------------
+TXLib соболезнует...
+
+Программа: D:\vscode\calculator\calc\calc.exe,
+
+ВНЕЗАПНО: signal (22, 0x00): SIGABRT: Аварийное завершение программы, вызвана функция abort(). 
+
+С помощью функции signal() вы можете сами обработать эту ошибку.
+
+#1: TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400], Instance: 0x0050831C (32-bit), Flags: Cmdre0, Thread: 0xD80 (Main), GetLastError(): 183 (Невозможно создать файл, так как он уже существует). 
+
+--------------------------------------------------
+Стек вызовов:
+
+# 0 0x00412EE8 in D:\vscode\calculator\calc\calc.exe: _txOnSignal() at c:/users/mpavl/downloads/codeblocks/mingw/include/txlib.h (11006)
+# 1 0x76D371F1 in C:\Windows\System32\msvcrt.dll: raise()
+# 2 0x76D3B69B in C:\Windows\System32\msvcrt.dll: abort()
+
+# 3 0x00402501 in D:\vscode\calculator\calc\calc.exe: stack_pop() at D:/vscode/calculator/include/stack.cpp (133):
+
+    131: {
+    132:     assert_stack (stk);
+=>  133:     my_assert (stk->position > 0);
+    134:     
+    135:     if (stk->position < stk->size / HST_DOWN)
+
+# 4 0x00401FD6 in D:\vscode\calculator\calc\calc.exe: calc_func() at D:/vscode/calculator/calc/calc.cpp (224):
+
+    222:                 break;
+    223:             case (POP + (1 << 5)):
+=>  224:                 REG_VALUE[data->cmd[id].reg - 1] = stack_pop (stack);
+    225: 
+    226:                 break;
+
+# 5 0x0040159D in D:\vscode\calculator\calc\calc.exe: main() at D:/vscode/calculator/calc/main.cpp (26):
+
+     24:     }
+     25: 
+=>   26:     if ((code_error = calc_func (&stack, &data)) != ERR_NO)
+     27:     {
+     28:         fprintf (stderr, "%s", my_strerr (code_error));
+
+--------------------------------------------------
+Developed with:
+
+The Dumb Artist Library (TX Library)
+TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400]
+Copyright (C) Ded (Ilya Dedinsky, http://txlib.ru) <mail@txlib.ru>
+See license on: http://txlib.ru
+
+TXLib file:	c:\users\mpavl\downloads\codeblocks\mingw\include\txlib.h
+Compiled:	Oct 12 2023 17:29:48, GNU g++ 4.8.1, std=201103L, MinGW Runtime 3.20, 32-bit, DEBUG
+Started:	Oct 12 2023 17:43:16
+
+Run file:	D:\vscode\calculator\calc\calc.exe
+Directory:	D:\vscode\calculator\calc
+
+--------------------------------------------------
+
+--------------------------------------------------
+TXLib соболезнует...
+
+Программа: D:\vscode\calculator\calc\calc.exe,
+
+ВНЕЗАПНО: signal (22, 0x00): SIGABRT: Аварийное завершение программы, вызвана функция abort(). 
+
+С помощью функции signal() вы можете сами обработать эту ошибку.
+
+#1: TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400], Instance: 0x0050831C (32-bit), Flags: Cmdre0, Thread: 0xD98 (Main), GetLastError(): 183 (Невозможно создать файл, так как он уже существует). 
+
+--------------------------------------------------
+Стек вызовов:
+
+# 0 0x00412EFC in D:\vscode\calculator\calc\calc.exe: _txOnSignal() at c:/users/mpavl/downloads/codeblocks/mingw/include/txlib.h (11006)
+# 1 0x76D371F1 in C:\Windows\System32\msvcrt.dll: raise()
+# 2 0x76D3B69B in C:\Windows\System32\msvcrt.dll: abort()
+
+# 3 0x00402515 in D:\vscode\calculator\calc\calc.exe: stack_pop() at D:/vscode/calculator/include/stack.cpp (133):
+
+    131: {
+    132:     assert_stack (stk);
+=>  133:     my_assert (stk->position > 0);
+    134:     
+    135:     if (stk->position < stk->size / HST_DOWN)
+
+# 4 0x00401FE9 in D:\vscode\calculator\calc\calc.exe: calc_func() at D:/vscode/calculator/calc/calc.cpp (225):
+
+    223:             case (POP + (1 << 5)):
+    224:                 printf ("%d\n", id);
+=>  225:                 REG_VALUE[data->cmd[id].reg - 1] = stack_pop (stack);
+    226: 
+    227:                 break;
+
+# 5 0x0040159D in D:\vscode\calculator\calc\calc.exe: main() at D:/vscode/calculator/calc/main.cpp (26):
+
+     24:     }
+     25: 
+=>   26:     if ((code_error = calc_func (&stack, &data)) != ERR_NO)
+     27:     {
+     28:         fprintf (stderr, "%s", my_strerr (code_error));
+
+--------------------------------------------------
+Developed with:
+
+The Dumb Artist Library (TX Library)
+TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400]
+Copyright (C) Ded (Ilya Dedinsky, http://txlib.ru) <mail@txlib.ru>
+See license on: http://txlib.ru
+
+TXLib file:	c:\users\mpavl\downloads\codeblocks\mingw\include\txlib.h
+Compiled:	Oct 12 2023 17:29:48, GNU g++ 4.8.1, std=201103L, MinGW Runtime 3.20, 32-bit, DEBUG
+Started:	Oct 12 2023 17:46:03
+
+Run file:	D:\vscode\calculator\calc\calc.exe
+Directory:	D:\vscode\calculator\calc
+
+--------------------------------------------------

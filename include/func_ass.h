@@ -23,12 +23,16 @@ enum COMMANDS_CODE {
     POP
 };
 
+const size_t COMMAND_CNT = 12;
+
 enum REG {
     RAX = 1,
     RBX,
     RCX,
     RDX
 };
+
+const size_t REG_CNT = 4;
 
 typedef struct {
     size_t size_str = 0;

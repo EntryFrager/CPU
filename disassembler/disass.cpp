@@ -22,8 +22,6 @@ const char *REG[] = {
     "rdx"
 };
 
-const int COMMAND_CNT = 11;
-
 int input_text (TEXT* data)
 {
     my_assert (data != NULL);

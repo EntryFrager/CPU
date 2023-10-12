@@ -14,7 +14,7 @@ const char *COMMAND[] = {
     "in"
 };
 
-const int COMMAND_CNT = 11;
+int REG_VALUE[REG_CNT] = {0};
 
 int input_text (TEXT* data)
 {
@@ -48,12 +48,12 @@ int input_text (TEXT* data)
         return ERR_FCLOSE;
     }
 
-    split_commands (data);
+    int code_error = split_commands (data);
 
-    return ERR_NO;
+    return code_error;
 }
 
-void split_commands (TEXT *data)
+int split_commands (TEXT *data)
 {   
     my_assert (data != NULL);
 
@@ -66,23 +66,73 @@ void split_commands (TEXT *data)
 
     for (size_t id = 0; id < data->n_comms; id++)
     {
-        sscanf (data->buf, "%d", &data->cmd[id].command);
+        int value = -1;
 
-        sprintf (buf, "%d", data->cmd[id].command);
-        data->buf = move_point (data, buf);     
-
-        if (data->cmd[id].command == PUSH)
+        if (sscanf (data->buf, "%d", &value) != 1)
         {
-            sscanf (data->buf, "%d", &data->cmd[id].argc);
+            return ERR_COMMAND;
+        }
+
+        sprintf (buf, "%d", value);
+        data->buf = move_point (data, buf);   
+
+        if (value == (PUSH + (1 << 5)))
+        {
+            data->cmd[id].command = PUSH + (1 << 5);
+
+            if (sscanf (data->buf, "%d", &data->cmd[id].reg) != 1)
+            {
+                return ERR_REG_PUSH;
+            }
+
+            if (data->cmd[id].reg < RAX || data->cmd[id].reg > RDX)
+            {
+                return ERR_REG_PUSH;
+            }
+
+            sprintf (buf, "%d", data->cmd[id].reg);
+            data->buf = move_point (data, buf);  
+        }
+        else if (value == (PUSH + (1 << 4)))
+        {
+            data->cmd[id].command = PUSH + (1 << 4);
+
+            if (sscanf (data->buf, "%d", &data->cmd[id].argc) != 1)
+            {
+                return ERR_ARGC;
+            }
 
             sprintf (buf, "%d", data->cmd[id].argc);
-            data->buf = move_point (data, buf);  
+            data->buf = move_point (data, buf);
+        }
+        else if (value == (POP + (1 << 5)))
+        {
+            data->cmd[id].command = POP + (1 << 5);
+
+            if (sscanf (data->buf, "%d", &data->cmd[id].reg) != 1)
+            {
+                return ERR_REG_POP;
+            }
+
+            if (data->cmd[id].reg < RAX || data->cmd[id].reg > RDX)
+            {
+                return ERR_REG_POP;
+            }
+
+            sprintf (buf, "%d", data->cmd[id].reg);
+            data->buf = move_point (data, buf);
+        }
+        else if (value >= HLT && value <= POP)
+        {
+            data->cmd[id].command = value;
         }
         else
         {
-            data->cmd[id].argc = -1;
+            return ERR_COMMAND;
         }
-    }   
+    }
+
+    return ERR_NO;
 }
 
 int calc_func (STACK *stack, TEXT *data)
@@ -101,55 +151,78 @@ int calc_func (STACK *stack, TEXT *data)
         {
             case HLT:
                 fprintf (data->fp_print, "Расчёт окончен.\n");
+
                 return ERR_NO;
             case OUT:
-                fprintf (data->fp_print, "Ответ: %d\n", stack_pop (stack));
+                fprintf (data->fp_print, "Ответ: %d\n", stack->data[stack->position - 1]);
+
                 break;
-            case PUSH:
+            case (PUSH + (1 << 4)):
                 stack_push (stack, data->cmd[id].argc);
+
+                break;
+            case (PUSH + (1 << 5)):
+                stack_push (stack, REG_VALUE[data->cmd[id].reg - 1]);
+
                 break;
             case ADD:
                 a = stack_pop (stack);
                 b = stack_pop (stack);
 
                 stack_push (stack, a + b);
+
                 break;
             case SUB:
                 a = stack_pop (stack);
                 b = stack_pop (stack);
 
                 stack_push (stack, b - a);
+
                 break;
             case MUL:
                 a = stack_pop (stack);
                 b = stack_pop (stack);
 
                 stack_push (stack, b * a);
+
                 break;
             case DIV:
                 a = stack_pop (stack);
                 b = stack_pop (stack);
 
                 stack_push (stack, b / a);
+
                 break;
             case SQRT:
                 a = stack_pop (stack);
 
                 stack_push (stack, (ELEMENT) sqrt (a));
+
                 break;
             case SIN:
                 a = stack_pop (stack);
 
                 stack_push (stack, (ELEMENT) sin (a));
+
                 break;
             case COS:
                 a = stack_pop (stack);
 
                 stack_push (stack, (ELEMENT) cos (a));
+
                 break;
             case IN:
                 scanf ("%d", &a);
                 stack_push (stack, (ELEMENT) a);
+
+                break;
+            case POP:
+                stack_pop (stack);
+
+                break;
+            case (POP + (1 << 5)):
+                REG_VALUE[data->cmd[id].reg - 1] = stack_pop (stack);
+
                 break;
             default:
                 return ERR_COMMAND;

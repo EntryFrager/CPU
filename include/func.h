@@ -23,12 +23,16 @@ enum COMMANDS_CODE {
     POP
 };
 
+const size_t COMMAND_CNT = 11;
+
 enum REG {
     RAX = 1,
     RBX,
     RCX,
     RDX
 };
+
+const size_t REG_CNT = 4;
 
 const int COMMANDS_DEFAULT = 0;
 

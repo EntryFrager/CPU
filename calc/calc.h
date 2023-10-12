@@ -7,7 +7,7 @@
 
 int input_text (TEXT *data);
 
-void split_commands (TEXT *data);
+int split_commands (TEXT *data);
 
 int calc_func (STACK *stack, TEXT *data);
 
