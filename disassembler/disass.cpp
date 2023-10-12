@@ -1,9 +1,5 @@
 #include "disass.h"
 
-static size_t number_of_lines (const char *data, const size_t size);
-
-static char *move_point (TEXT *data, const char *buf);
-
 const char *COMMAND[] = {
     "hlt",
     "out",
@@ -15,14 +11,24 @@ const char *COMMAND[] = {
     "sqrt",
     "sin",
     "cos",
-    "in"
+    "in",
+    "pop"
 };
+
+const char *REG[] = {
+    "rax",
+    "rbx",
+    "rcx",
+    "rdx"
+};
+
+const int COMMAND_CNT = 11;
 
 int input_text (TEXT* data)
 {
     my_assert (data != NULL);
 
-    data->file_name_input = (const char *) "D:\\vscode\\calculator\\ass_output.txt";
+    data->file_name_input = (const char *) "..\\include\\ass_output.txt";
 
     data->fp_input = fopen (data->file_name_input, "rb");
 
@@ -68,79 +74,73 @@ int split_commands (TEXT *data)
 
     for (size_t id = 0; id < data->n_comms; id++)
     {
-        if (sscanf (data->buf, "%d", &data->cmd[id].command) != 1)
+        int value = -1;
+
+        if (sscanf (data->buf, "%d", &value) != 1)
         {
             return ERR_COMMAND;
         }
 
-        sprintf (buf, "%d", data->cmd[id].command);
-        data->buf = move_point (data, buf);     
+        sprintf (buf, "%d", value);
+        data->buf = move_point (data, buf);   
 
-        if (data->cmd[id].command == PUSH)
+        if (value == (PUSH + (1 << 5)))
         {
+            data->cmd[id].command = PUSH;
+
+            if (sscanf (data->buf, "%d", &data->cmd[id].reg) != 1)
+            {
+                return ERR_REG_PUSH;
+            }
+
+            if (data->cmd[id].reg < RAX || data->cmd[id].reg > RDX)
+            {
+                return ERR_REG_PUSH;
+            }
+
+            sprintf (buf, "%d", data->cmd[id].reg);
+            data->buf = move_point (data, buf);  
+        }
+        else if (value == (PUSH + (1 << 4)))
+        {
+            data->cmd[id].command = PUSH;
+
             if (sscanf (data->buf, "%d", &data->cmd[id].argc) != 1)
             {
                 return ERR_ARGC;
             }
 
             sprintf (buf, "%d", data->cmd[id].argc);
-            data->buf = move_point (data, buf);  
+            data->buf = move_point (data, buf);
         }
-        else if (data->cmd[id].command >= HLT && data->cmd[id].command <= IN)
+        else if (value == (POP + (1 << 5)))
         {
-            data->cmd[id].argc = -1;
+            data->cmd[id].command = POP;
+
+            if (sscanf (data->buf, "%d", &data->cmd[id].reg) != 1)
+            {
+                return ERR_REG_POP;
+            }
+
+            if (data->cmd[id].reg < RAX || data->cmd[id].reg > RDX)
+            {
+                return ERR_REG_POP;
+            }
+
+            sprintf (buf, "%d", data->cmd[id].reg);
+            data->buf = move_point (data, buf);
+        }
+        else if (value >= HLT && value <= POP)
+        {
+            data->cmd[id].command = value;
         }
         else
         {
             return ERR_COMMAND;
         }
-    }   
-    return ERR_NO;
-}
-
-static char *move_point (TEXT *data, const char *buf)
-{
-    my_assert (data != NULL);
-    my_assert (buf != NULL);
-
-    int len = strlen (buf);
-    data->buf += len + 1;
-
-    while (*data->buf == ' ' || *data->buf == '\n')
-    {
-        data->buf++;
-    }   
-
-    return data->buf;
-}
-
-static size_t number_of_lines (const char *data, const size_t size)
-{
-    my_assert (data != NULL);
-
-    size_t n = 1;
-
-    for (size_t i = 1; i < size; i++)
-    {
-        if (data[i] == '\n' && data[i - 1] != '\n')
-        {
-            n++;
-        }
     }
 
-    return n;
-}
-
-size_t get_file_size (FILE *stream)
-{
-    my_assert (stream != NULL);
-
-    size_t start = ftell (stream);
-    fseek (stream, start, SEEK_END);
-    size_t size_file = ftell (stream);
-    rewind (stream);
-
-    return size_file;
+    return ERR_NO;
 }
 
 void print_text (TEXT *data)
@@ -149,11 +149,29 @@ void print_text (TEXT *data)
     
     for (size_t id = 0; id < data->n_comms; id++)
     {
-        if (data->cmd[id].command == 2)
-        {   
-            fprintf (data->fp_print, "%s %d\n", COMMAND[data->cmd[id].command], (data->cmd[id].argc));
+        if (data->cmd[id].command == PUSH)
+        {
+            if (data->cmd[id].reg != COMMANDS_DEFAULT)
+            {
+                fprintf (data->fp_print, "%s %s\n", COMMAND[data->cmd[id].command], REG[data->cmd[id].reg - 1]);
+            }
+            else
+            {
+                fprintf (data->fp_print, "%s %d\n", COMMAND[data->cmd[id].command], (data->cmd[id].argc));
+            }
         }
-        else if (data->cmd[id].command == 0)
+        else if (data->cmd[id].command == POP)
+        {   
+            if (data->cmd[id].reg != COMMANDS_DEFAULT)
+            {
+                fprintf (data->fp_print, "%s %s\n", COMMAND[data->cmd[id].command], REG[data->cmd[id].reg - 1]);
+            }
+            else
+            {
+                fprintf (data->fp_print, "%s\n", COMMAND[data->cmd[id].command]);
+            }
+        }
+        else if (data->cmd[id].command == COMMANDS_DEFAULT)
         {
             fprintf (data->fp_print, "%s", COMMAND[data->cmd[id].command]);
         }

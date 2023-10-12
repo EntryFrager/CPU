@@ -1,0 +1,6 @@
+push 4
+push rcx
+pop rax
+pop
+out
+hlt

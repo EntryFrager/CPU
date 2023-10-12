@@ -7,15 +7,15 @@ CFLAGS = -c -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-
 	-Wnon-virtual-dtor -Woverloaded-virtual -Wpointer-arith -Wsign-promo -Wstack-usage=8192 -Wstrict-aliasing   \
 	-Wstrict-null-sentinel -Wtype-limits -Wwrite-strings -Werror=vla -D_DEBUG -D_EJUDGE_CLIENT_SIDE
 	
-INCLUDES = disass.h error.h
+INCLUDES = disass.h error.h func.h
 
-SOURCES = main.cpp error.cpp disass.cpp
+SOURCES = main.cpp error.cpp disass.cpp func.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
 EXECUTABLE = disassembler
 
-VPATH = D:\vscode\calculator
+VPATH = ..\include
 
 all: $(SOURCES) $(EXECUTABLE)
 

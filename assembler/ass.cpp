@@ -1,7 +1,5 @@
 #include "ass.h"
 
-static size_t number_of_lines (const char *data, const size_t size);
-
 const char *COMMAND[] = {
     "hlt",
     "out",
@@ -13,16 +11,26 @@ const char *COMMAND[] = {
     "sqrt",
     "sin",
     "cos",
-    "in"
+    "in",
+    "pop"
 };
 
-const int COMMAND_CNT = 11;
+const char *REG[] = {
+    "rax",
+    "rbx",
+    "rcx",
+    "rdx"
+};
+
+const size_t COMMAND_CNT = 12;
+
+const size_t REG_CNT = 4;
 
 int input_text (TEXT* data)
 {
     my_assert (data != NULL);
 
-    data->file_name_input = (const char *) "D:\\vscode\\calculator\\ass_input.txt";
+    data->file_name_input = (const char *) "..\\include\\ass_input.txt";
 
     data->fp_input = fopen (data->file_name_input, "rb");
 
@@ -85,67 +93,109 @@ void split_commands (TEXT *data)
     }   
 }
 
-static size_t number_of_lines (const char *data, const size_t size)
-{
-    my_assert (data != NULL);
-
-    size_t n = 1;
-
-    for (size_t i = 1; i < size; i++)
-    {
-        if (data[i] == '\n' && data[i - 1] != '\n')
-        {
-            n++;
-        }
-    }
-
-    return n;
-}
-
-size_t get_file_size (FILE *stream)
-{
-    my_assert (stream != NULL);
-
-    size_t start = ftell (stream);
-    fseek (stream, start, SEEK_END);
-    size_t size_file = ftell (stream);
-    rewind (stream);
-
-    return size_file;
-}
-
 int print_text (TEXT *data)
 {
     my_assert (data != NULL);
-    
-    for (size_t i = 0; i < data->n_comms; i++)
+
+    for (size_t id = 0; id < data->n_comms; id++)
     {
         int err = 0;
-        for (int j = 0; j < COMMAND_CNT; j++)
+
+        for (size_t n_cmd = 0; n_cmd < COMMAND_CNT; n_cmd++)
         {
-            int cmd_len = strlen (COMMAND[j]);
-            if (strncmp (data->cmd[i].command, COMMAND[j], cmd_len) == 0)
+            size_t cmd_len = strlen (COMMAND[n_cmd]);
+
+            if (strncmp (data->cmd[id].command, COMMAND[n_cmd], cmd_len) == 0)
             {
                 err++;
-                if (j == 2)
+
+                if (n_cmd == PUSH)
                 {
                     int value = 0;
-                    if (sscanf ((data->cmd[i].command + 5), "%d", &value) != 1)
+                    char buf[256] = "";
+
+                    for (size_t n_reg = 0; n_reg < REG_CNT; n_reg++)
                     {
-                        return ERR_ARGC;
+                        size_t reg_len = strlen (REG[n_reg]);
+
+                        if (strncmp ((data->cmd[id].command + cmd_len + 1), REG[n_reg], reg_len) == 0)
+                        {
+                            if ((*(data->cmd[id].command + cmd_len) != ' ') || (*(data->cmd[id].command + cmd_len + 1 + reg_len + 1) != '\0'))
+                            {
+                                return ERR_REG_PUSH;
+                            }
+                            else
+                            {
+                                fprintf (data->fp_print, "%d %d\n", PUSH + (1 << 5), n_reg + 1);
+
+                                value = -1;
+                            }
+                        }
                     }
 
-                    fprintf (data->fp_print, "%d %d\n", j, value);
-                }
-                else if (*(data->cmd[i].command + cmd_len + 1) == '\0')
-                {
-                    if ((i + 1) == data->n_comms)
+                    if (value == 0)
                     {
-                        fprintf (data->fp_print, "%d", j);
+                        if (sscanf ((data->cmd[id].command + cmd_len + 1), "%d", &value) != 1)
+                        {
+                            return ERR_ARGC;
+                        }
+
+                        sprintf (buf, "%d", value);
+
+                        if (*(data->cmd[id].command + cmd_len + 1 + strlen (buf) + 1) == '\0' && (*(data->cmd[id].command + 4) == ' '))
+                        {
+                            fprintf (data->fp_print, "%d %d\n", PUSH + (1 << 4), value);
+                        }
+                        else
+                        {
+                            return ERR_COMMAND;
+                        }
+                    }
+                }
+                else if (n_cmd == POP)
+                {
+                    int err_reg = 0;
+
+                    if (*(data->cmd[id].command + cmd_len + 1) == '\0')
+                    {
+                        fprintf (data->fp_print, "%d\n", POP);
                     }
                     else
                     {
-                        fprintf (data->fp_print, "%d\n", j);
+                        for (size_t n_reg = 0; n_reg < REG_CNT; n_reg++)
+                        {
+                            size_t reg_len = strlen (REG[n_reg]);
+
+                            if (strncmp ((data->cmd[id].command + cmd_len + 1), REG[n_reg], reg_len) == 0)
+                            {
+                                err_reg++;
+
+                                if ((*(data->cmd[id].command + cmd_len) != ' ') || (*(data->cmd[id].command + cmd_len + 1 + reg_len + 1) != '\0'))
+                                {
+                                    return ERR_REG_POP;
+                                }
+                                else
+                                {
+                                    fprintf (data->fp_print, "%d %d\n", POP + (1 << 5), n_reg + 1);
+                                }
+                            }
+                        }
+
+                        if (err_reg == 0)
+                        {
+                            return ERR_REG_POP;
+                        }
+                    }
+                }
+                else if (*(data->cmd[id].command + cmd_len + 1) == '\0')
+                {
+                    if ((id + 1) == data->n_comms)
+                    {
+                        fprintf (data->fp_print, "%d", n_cmd);
+                    }
+                    else
+                    {
+                        fprintf (data->fp_print, "%d\n", n_cmd);
                     }
                 }
                 else
@@ -155,6 +205,7 @@ int print_text (TEXT *data)
                 
             }
         }
+
         if (err != 1)
         {
             return ERR_COMMAND;

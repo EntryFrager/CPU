@@ -14,7 +14,7 @@ int main ()
         fprintf(stderr, "%s", my_strerr (code_error));
     }
 
-    data.file_name_print = "D:\\vscode\\calculator\\result.txt";
+    data.file_name_print = "..\\include\\result.txt";
 
     data.fp_print = fopen (data.file_name_print, "w");
 

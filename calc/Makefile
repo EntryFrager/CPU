@@ -7,15 +7,15 @@ CFLAGS = -c -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-
 	-Wnon-virtual-dtor -Woverloaded-virtual -Wpointer-arith -Wsign-promo -Wstack-usage=8192 -Wstrict-aliasing   \
 	-Wstrict-null-sentinel -Wtype-limits -Wwrite-strings -Werror=vla -D_DEBUG -D_EJUDGE_CLIENT_SIDE
 	
-INCLUDES = calc.h stack.h error.h
+INCLUDES = calc.h stack.h error.h func.h
 
-SOURCES = main.cpp error.cpp calc.cpp stack.cpp
+SOURCES = main.cpp calc.cpp stack.cpp error.cpp func.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
 EXECUTABLE = calc
 
-VPATH = D:\vscode\calculator
+VPATH = D:\vscode\calculator\include
 
 all: $(SOURCES) $(EXECUTABLE)
 
