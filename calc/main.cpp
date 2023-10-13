@@ -16,7 +16,7 @@ int main ()
 
     data.file_name_print = "..\\include\\result.txt";
 
-    data.fp_print = fopen (data.file_name_print, "w");
+    data.fp_print = fopen (data.file_name_print, "wb");
 
     if (data.fp_print == NULL)
     {

@@ -11,11 +11,13 @@ int main ()
         fprintf(stderr, "%s", my_strerr (code_error));
     }
 
-    data.file_name_print = "..\\include\\ass_output.txt";
+    data.file_name_print_bin = "..\\include\\ass_output.bin";
+    data.file_name_print_txt = "..\\include\\ass_output.txt";
 
-    data.fp_print = fopen (data.file_name_print, "w");
+    data.fp_print_bin = fopen (data.file_name_print_bin, "w + b");
+    data.fp_print_txt = fopen (data.file_name_print_txt, "w");
 
-    if (data.fp_print == NULL)
+    if (data.fp_print_txt == NULL || data.fp_print_bin == NULL)
     {
         fprintf (stderr, "%s", my_strerr (ERR_FOPEN));
     }
@@ -25,7 +27,7 @@ int main ()
         fprintf (stderr, "%s", my_strerr (code_error));
     }
 
-    if (fclose (data.fp_print) != 0)
+    if (fclose (data.fp_print_txt) != 0 || fclose (data.fp_print_bin) != 0)
     {
         fprintf (stderr, "%s", my_strerr (ERR_FCLOSE));
     }

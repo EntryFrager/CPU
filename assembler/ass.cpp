@@ -28,7 +28,7 @@ int input_text (TEXT* data)
 
     data->file_name_input = (const char *) "..\\include\\ass_input.txt";
 
-    data->fp_input = fopen (data->file_name_input, "rb");
+    data->fp_input = fopen (data->file_name_input, "r + b");
 
     if (data->fp_input == NULL)
     {
@@ -63,7 +63,7 @@ void split_commands (TEXT *data)
 {   
     my_assert (data != NULL);
 
-    data->n_comms =  number_of_lines (data->buf, data->size_file);
+    data->n_comms =  number_of_commands (data->buf, data->size_file);
 
     data->cmd = (COMMANDS *) calloc (data->n_comms, sizeof(COMMANDS));
     my_assert (data->cmd != NULL);
@@ -122,7 +122,12 @@ int print_text (TEXT *data)
                             }
                             else
                             {
-                                fprintf (data->fp_print, "%d %d\n", PUSH + (1 << 5), n_reg + 1);
+                                fprintf (data->fp_print_txt, "%d %d\n", PUSH + (1 << 5), n_reg + 1);
+
+                                int push_reg = PUSH + (1 << 5);
+                                fwrite (&push_reg, sizeof (int), 1, data->fp_print_bin);
+                                int reg = n_reg + 1;
+                                fwrite (&(reg), sizeof (int), 1, data->fp_print_bin);
 
                                 value = -1;
                             }
@@ -138,9 +143,13 @@ int print_text (TEXT *data)
 
                         sprintf (buf, "%d", value);
 
-                        if (*(data->cmd[id].command + cmd_len + 1 + strlen (buf) + 1) == '\0' && (*(data->cmd[id].command + 4) == ' '))
+                        if (*(data->cmd[id].command + cmd_len + 1 + strlen (buf) + 1) == '\0' && (*(data->cmd[id].command + cmd_len) == ' '))
                         {
-                            fprintf (data->fp_print, "%d %d\n", PUSH + (1 << 4), value);
+                            fprintf (data->fp_print_txt, "%d %d\n", PUSH + (1 << 4), value);
+
+                            int push = PUSH + (1 << 4);
+                            fwrite (&push, sizeof (int), 1, data->fp_print_bin);
+                            fwrite (&value, sizeof (int), 1, data->fp_print_bin);
                         }
                         else
                         {
@@ -152,9 +161,11 @@ int print_text (TEXT *data)
                 {
                     int err_reg = 0;
 
-                    if (*(data->cmd[id].command + cmd_len + 1) == '\0')
+                    if (*(data->cmd[id].command + cmd_len) == '\0')
                     {
-                        fprintf (data->fp_print, "%d\n", POP);
+                        int pop = POP;
+                        fwrite (&pop, sizeof (int), 1, data->fp_print_bin);
+                        fprintf (data->fp_print_txt, "%d\n", POP);
                     }
                     else
                     {
@@ -172,7 +183,11 @@ int print_text (TEXT *data)
                                 }
                                 else
                                 {
-                                    fprintf (data->fp_print, "%d %d\n", POP + (1 << 5), n_reg + 1);
+                                    fprintf (data->fp_print_txt, "%d %d\n", POP + (1 << 5), n_reg + 1);
+                                    int cmd_pop = POP + (1 << 5);
+                                    int reg_pop = n_reg + 1;
+                                    fwrite (&cmd_pop, sizeof (int), 1, data->fp_print_bin);
+                                    fwrite (&reg_pop, sizeof (int), 1, data->fp_print_bin);
                                 }
                             }
                         }
@@ -187,11 +202,13 @@ int print_text (TEXT *data)
                 {
                     if ((id + 1) == data->n_comms)
                     {
-                        fprintf (data->fp_print, "%d", n_cmd);
+                        fprintf (data->fp_print_txt, "%d", n_cmd);
+                        fwrite (&n_cmd, sizeof (int), 1, data->fp_print_bin);
                     }
                     else
                     {
-                        fprintf (data->fp_print, "%d\n", n_cmd);
+                        fprintf (data->fp_print_txt, "%d\n", n_cmd);
+                        fwrite (&n_cmd, sizeof (int), 1, data->fp_print_bin);
                     }
                 }
                 else

@@ -5,10 +5,6 @@
 #include "..\include\error.h"
 #include "..\include\func.h"
 
-int input_text (TEXT *data);
-
-int split_commands (TEXT *data);
-
 int calc_func (STACK *stack, TEXT *data);
 
 #endif

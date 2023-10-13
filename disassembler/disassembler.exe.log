@@ -310,3 +310,81 @@ Run file:	D:\vscode\calculator\disassembler\disassembler.exe
 Directory:	D:\vscode\calculator\disassembler
 
 --------------------------------------------------
+
+--------------------------------------------------
+TXLib предупреждает:
+
+Программа: D:\vscode\calculator\disassembler\disassembler.exe,
+
+ВНЕЗАПНО: Нарушение доступа к памяти.
+
+#1: Исключение EXCEPTION_ACCESS_VIOLATION (0xC0000005) при выполнении кода по адресу 0x00000012. Попытка прочесть данные по адресу 0x00000012. Спасибо _txVectoredExceptionHandler(), что сообщил. Люблю его <3
+
+#1: TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400], Instance: 0x005072FC (32-bit), Flags: Cmdre0, Thread: 0x382C (Main). 
+
+--------------------------------------------------
+Стек вызовов:
+
+# 0 0x004126B3 in D:\vscode\calculator\disassembler\disassembler.exe: _txOnExceptionSEH() at c:/users/mpavl/downloads/codeblocks/mingw/include/txlib.h (11490)
+# 1 0x00411DCC in D:\vscode\calculator\disassembler\disassembler.exe: _txVectoredExceptionHandler() at c:/users/mpavl/downloads/codeblocks/mingw/include/txlib.h (11376)
+# 2 0x776FCF98 in C:\Windows\SYSTEM32\ntdll.dll: LdrSetDllManifestProber()
+# 3 0x776F921B in C:\Windows\SYSTEM32\ntdll.dll: RtlUnwind()
+# 4 0x777050D6 in C:\Windows\SYSTEM32\ntdll.dll: KiUserExceptionDispatcher()
+
+--------------------------------------------------
+Developed with:
+
+The Dumb Artist Library (TX Library)
+TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400]
+Copyright (C) Ded (Ilya Dedinsky, http://txlib.ru) <mail@txlib.ru>
+See license on: http://txlib.ru
+
+TXLib file:	c:\users\mpavl\downloads\codeblocks\mingw\include\txlib.h
+Compiled:	Oct 13 2023 17:14:25, GNU g++ 4.8.1, std=201103L, MinGW Runtime 3.20, 32-bit, DEBUG
+Started:	Oct 13 2023 17:22:54
+
+Run file:	D:\vscode\calculator\disassembler\disassembler.exe
+Directory:	D:\vscode\calculator\disassembler
+
+--------------------------------------------------
+
+--------------------------------------------------
+TXLib соболезнует...
+
+Программа: D:\vscode\calculator\disassembler\disassembler.exe,
+
+ВНЕЗАПНО: signal (11, 0x00): SIGSEGV: Доступ по неверному указателю. Ставьте ассерты! 
+
+Нарушение доступа к памяти.
+
+#1: Исключение EXCEPTION_ACCESS_VIOLATION (0xC0000005) при выполнении кода по адресу 0x00000012. Попытка прочесть данные по адресу 0x00000012. Спасибо _txVectoredExceptionHandler(), что сообщил. Люблю его <3
+
+С помощью функции signal() вы можете сами обработать эту ошибку.
+
+#2: TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400], Instance: 0x005072FC (32-bit), Flags: Cmdre0, Thread: 0x382C (Main). 
+
+--------------------------------------------------
+Стек вызовов:
+
+# 0 0x0041147C in D:\vscode\calculator\disassembler\disassembler.exe: _txOnSignal() at c:/users/mpavl/downloads/codeblocks/mingw/include/txlib.h (11006)
+# 1 0x004010F9 in D:\vscode\calculator\disassembler\disassembler.exe: _gnu_exception_handler@4()
+# 2 0x765E2842 in C:\Windows\System32\KERNELBASE.dll: UnhandledExceptionFilter()
+# 3 0x7773482E in C:\Windows\SYSTEM32\ntdll.dll: RtlCaptureStackContext()
+# 4 0x776F7C3E in C:\Windows\SYSTEM32\ntdll.dll: RtlGetAppContainerNamedObjectPath()
+
+--------------------------------------------------
+Developed with:
+
+The Dumb Artist Library (TX Library)
+TXLib [Ver: 00173a, Rev: 172, Date: 2023-08-12 11:12:24 +0400]
+Copyright (C) Ded (Ilya Dedinsky, http://txlib.ru) <mail@txlib.ru>
+See license on: http://txlib.ru
+
+TXLib file:	c:\users\mpavl\downloads\codeblocks\mingw\include\txlib.h
+Compiled:	Oct 13 2023 17:14:25, GNU g++ 4.8.1, std=201103L, MinGW Runtime 3.20, 32-bit, DEBUG
+Started:	Oct 13 2023 17:22:54
+
+Run file:	D:\vscode\calculator\disassembler\disassembler.exe
+Directory:	D:\vscode\calculator\disassembler
+
+--------------------------------------------------

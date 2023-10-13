@@ -23,7 +23,7 @@ enum COMMANDS_CODE {
     POP
 };
 
-const size_t COMMAND_CNT = 11;
+const size_t COMMAND_CNT = 12;
 
 enum REG {
     RAX = 1,
@@ -49,17 +49,19 @@ typedef struct {
     FILE *fp_input = NULL;
     FILE *fp_print = NULL;
 
-    char *buf = NULL;
+    int *buf = NULL;
 
     size_t size_file = 0;
-    size_t n_comms = 0;
+    size_t n_cmd = 0;
 
     COMMANDS *cmd = NULL;
 } TEXT;
 
-size_t number_of_lines (const char *data, const size_t size);
+int input_text (TEXT *data);
 
-char *move_point (TEXT *data, const char *buf);
+int split_commands (TEXT *data);
+
+size_t number_of_commands (const int *data, const size_t size);
 
 size_t get_file_size (FILE *stream);
 

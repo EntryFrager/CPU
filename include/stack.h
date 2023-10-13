@@ -8,7 +8,7 @@
 #include <math.h>
 #include <string.h>
 
-#include "..\include\error.h"
+#include "error.h"
 
 #define CANARIES_CHECK                                                                                                  ///< Macro to enable canary protection.
 
@@ -31,14 +31,14 @@ static int CODE_ERROR = 0;                                                      
     }                                                                   \
 }
 
-typedef int ELEMENT;                                                                                                    ///< The type of stack elements.
+typedef double ELEMENT;                                                                                                 ///< The type of stack elements.
 
 const ELEMENT STACK_VALUE_VENOM = -100000;                                                                              ///< Variable containing poison
 
 #ifdef CANARIES_CHECK
     typedef unsigned long long CANARY_TYPE;                                                                             ///< Type of canaries.
 
-    const CANARY_TYPE CANARY = 0xDEDEDEDEDEDEDEDE;                                                                              ///< The meaning of canaries.
+    const CANARY_TYPE CANARY = 0xDEDEDEDEDEDEDEDE;                                                                      ///< The meaning of canaries.
 #endif
 
 #ifdef HASH_CHECK
@@ -56,8 +56,8 @@ typedef struct {                                                                
     int position = STACK_VALUE_VENOM;                                                                                   ///< The position on the stack at which the next element is written.
 
 #ifdef HASH_CHECK
-    HASH_TYPE hash_data = STACK_VALUE_VENOM;                                                                            ///< Variable storing the hash value of an array with stack elements.
-    HASH_TYPE hash_struct = STACK_VALUE_VENOM;                                                                          ///< Variable storing the structure hash value.
+    HASH_TYPE hash_data = (HASH_TYPE) STACK_VALUE_VENOM;                                                                ///< Variable storing the hash value of an array with stack elements.
+    HASH_TYPE hash_struct = (HASH_TYPE) STACK_VALUE_VENOM;                                                              ///< Variable storing the structure hash value.
 #endif
 
 #ifdef CANARIES_CHECK
@@ -65,7 +65,7 @@ typedef struct {                                                                
 #endif
 } STACK;
 
-enum stack_code_error                                                                                                         ///< Error codes.                                                                               
+enum stack_code_error                                                                                                   ///< Error codes.                                                                               
 {
     STACK_OK,                                                                                                           ///< No error.
     STACK_ERR,                                                                                                          ///< Null stack pointer.

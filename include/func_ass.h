@@ -41,10 +41,12 @@ typedef struct {
 
 typedef struct {
     const char *file_name_input = NULL;
-    const char *file_name_print = NULL;
+    const char *file_name_print_txt = NULL;
+    const char *file_name_print_bin = NULL;
 
     FILE *fp_input = NULL;
-    FILE *fp_print = NULL;
+    FILE *fp_print_txt = NULL;
+    FILE *fp_print_bin = NULL;
 
     char *buf = NULL;
 
@@ -54,7 +56,7 @@ typedef struct {
     COMMANDS *cmd = NULL;
 } TEXT;
 
-size_t number_of_lines (const char *data, const size_t size);
+size_t number_of_commands (const char *data, const size_t size);
 
 char *move_point (TEXT *data, const char *buf);
 

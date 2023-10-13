@@ -51,10 +51,11 @@ void stack_ctor (STACK *stk, const size_t capacity)
     my_assert (stk->data != NULL)
 
     *((CANARY_TYPE *) stk->data) = CANARY;
-    *((CANARY_TYPE *)(stk->data + capacity + 1 * sizeof (CANARY_TYPE) / sizeof (ELEMENT))) = CANARY;
+
+    *((CANARY_TYPE *)(stk->data + capacity + sizeof (CANARY_TYPE) / sizeof (ELEMENT))) = CANARY;
     stk->data += sizeof (CANARY_TYPE) / sizeof (ELEMENT);
 
-    stk->left_canary = CANARY;
+    stk->left_canary  = CANARY;
     stk->right_canary = CANARY;
 #else
     stk->data = (ELEMENT *) calloc  (capacity * sizeof (ELEMENT), sizeof (char));
@@ -82,7 +83,7 @@ void stack_dtor (STACK *stk)
     my_assert (stk->data != NULL);
     assert_stack (stk);
 
-    free (stk->data);
+    free (stk->data - sizeof (CANARY_TYPE) / sizeof (ELEMENT));
 
 #ifdef CANARIES_CHECK
     stk->left_canary  = STACK_VALUE_VENOM;
@@ -180,9 +181,9 @@ int stack_realloc (STACK *stk, const int type_mode)
     stk->data = (ELEMENT *) realloc (stk->data - sizeof (CANARY_TYPE) / sizeof (ELEMENT), size * sizeof (ELEMENT) + 2 * sizeof (CANARY_TYPE));
     my_assert (stk->data != NULL);
 
-    stk->data += sizeof (CANARY_TYPE) / sizeof (ELEMENT);
+    *((CANARY_TYPE *)(stk->data + size + sizeof (CANARY_TYPE) / sizeof (ELEMENT))) = CANARY;
 
-    *((CANARY_TYPE *) (stk->data + size)) = CANARY;
+    stk->data += sizeof (CANARY_TYPE) / sizeof (ELEMENT);
 #else
     stk->data = (ELEMENT *) realloc (stk->data, size * sizeof (ELEMENT));
     my_assert (stk->data != NULL);
@@ -258,7 +259,7 @@ HASH_TYPE hash_djb(int str)
 
     for (int i = 0; i < str; i++)
     {
-        hash = (1 + hash) + i;
+        hash = ((hash << 5) + hash) + i;
     }
 
     return hash;
@@ -333,17 +334,17 @@ int stack_verification (STACK *stk)
     }
 
 #ifdef CANARIES_CHECK
-    if (*(stk->data - sizeof (CANARY_TYPE) / sizeof (ELEMENT)) != (int) CANARY && stk->data[stk->size] != (int) CANARY)
+    if (*(CANARY_TYPE *)(stk->data - sizeof (CANARY_TYPE) / sizeof (ELEMENT)) != CANARY && *(CANARY_TYPE *)(stk->data + stk->size) != CANARY)
     {
         return STACK_DATA_CANARY_ERR;
     }
 
-    if (*(stk->data - sizeof (CANARY_TYPE) / sizeof (ELEMENT)) != (int) CANARY)
+    if (*(CANARY_TYPE *)(stk->data - sizeof (CANARY_TYPE) / sizeof (ELEMENT)) != CANARY)
     {
         return STACK_DATA_LEFT_CANARY_ERR;
     }
 
-    if (stk->data[stk->size] != (int) CANARY)
+    if (*(CANARY_TYPE *)(stk->data + stk->size) != CANARY)
     {
         return STACK_DATA_RIGHT_CANARY_ERR;
     }
@@ -406,14 +407,14 @@ void stack_dump (STACK *stk, const int code_error, const char *file_err, const c
             {
                 for (int i = 0; i < stk->size; i++)
                 {
-                    fprintf (fp_err, "\t\t*[%d] = %d\n", i, stk->data[i]);
+                    fprintf (fp_err, "\t\t*[%d] = %lf\n", i, stk->data[i]);
                 }
             }
             else if (stk->position > 0)
             {
                 for (int i = 0; i < stk->position; i++)
                 {
-                    fprintf (fp_err, "\t\t*[%d] = %d\n", i, stk->data[i]);
+                    fprintf (fp_err, "\t\t*[%d] = %lf\n", i, stk->data[i]);
                 }
             }
 
@@ -444,7 +445,7 @@ void stack_dump (STACK *stk, const int code_error, const char *file_err, const c
     }
     else
     {
-        if (code_error < STACK_ERROR_CNT)
+        if (code_error < ERROR_CNT)
         {
             fprintf (fp_err, "%s\n", err_msgs_arr[code_error]);
         }

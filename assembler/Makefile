@@ -9,7 +9,7 @@ CFLAGS = -c -Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef -Wfloat-
 	
 INCLUDES = ass.h error.h func_ass.h
 
-SOURCES = main.cpp error.cpp ass.cpp func.cpp
+SOURCES = main.cpp error.cpp ass.cpp func_ass.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
