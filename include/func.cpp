@@ -1,5 +1,4 @@
 #include "func.h"
-#include "func_ass.h"
 
 int input_text (TEXT* data)
 {
@@ -36,6 +35,10 @@ int input_text (TEXT* data)
     return code_error;
 }
 
+#define DEF_CMD(name, mode, code_input, code_calc)          \
+    case (name):                                            \
+        code_input
+
 int split_commands (TEXT *data)
 {   
     my_assert (data != NULL);
@@ -52,93 +55,8 @@ int split_commands (TEXT *data)
 
         switch (command)
         {
-            case HLT:
-            {
-                data->cmd[pos_cmd].command = command;
-                
-                break;
-            }
-            case OUT:
-            {
-                data->cmd[pos_cmd].command = command;
-                
-                break;
-            }
-            case (PUSH + (1 << 5)):
-            {
-                data->cmd[pos_cmd].command = command;
-                data->cmd[pos_cmd].reg = data->buf[++id];
-                
-                break;
-            }
-            case (PUSH + (1 << 4)):
-            {
-                data->cmd[pos_cmd].command = command;
-                data->cmd[pos_cmd].argc = data->buf[++id];
-                
-                break;
-            }
-            case (POP + (1 << 5)):
-            {
-                data->cmd[pos_cmd].command = PUSH + (1 << 5);
-                data->cmd[pos_cmd].reg = data->buf[++id];
-                
-                break;
-            }
-            case POP:
-            {
-                data->cmd[pos_cmd].command = command;
-                
-                break;
-            }
-            case ADD:
-            {
-                data->cmd[pos_cmd].command = command;
-                
-                break;
-            }
-            case SUB:
-            {
-                data->cmd[pos_cmd].command = command;
-                
-                break;
-            }
-            case MUL:
-            {
-                data->cmd[pos_cmd].command = command;
-                
-                break;
-            }
-            case DIV:
-            {
-                data->cmd[pos_cmd].command = command;
-                
-                break;
-            }
-            case SIN:
-            {
-                data->cmd[pos_cmd].command = command;
-                
-                break;
-            }
-            case COS:
-            {
-                data->cmd[pos_cmd].command = command;
-                
-                break;
-            }
-            case SQRT:
-            {
-                data->cmd[pos_cmd].command = command;
-                
-                break;
-            }
-            case IN:
-            {
-                data->cmd[pos_cmd].command = command;
-                
-                break;
-            }
+            #include "..\include\commands.h"
+
             default:
                 return ERR_COMMAND;
         }
@@ -147,6 +65,8 @@ int split_commands (TEXT *data)
 
     return ERR_NO;
 }
+
+#undef DEF_CMD
 
 size_t number_of_commands (const int *data, const size_t size)
 {

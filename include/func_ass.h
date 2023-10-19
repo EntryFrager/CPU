@@ -20,7 +20,7 @@ enum COMMANDS_CODE {
     SIN,
     COS,
     IN,
-    POP
+    POP, 
 };
 
 const size_t COMMAND_CNT = 12;

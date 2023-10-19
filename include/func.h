@@ -8,6 +8,10 @@
 
 #include "..\include\error.h"
 
+#define PUSH(arg) stack_push (&stack, arg)
+
+#define POP() stack_pop (&stack)
+
 enum COMMANDS_CODE {
     HLT,
     OUT,

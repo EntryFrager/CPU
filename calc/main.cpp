@@ -3,7 +3,7 @@
 int main ()
 {
     TEXT data = {};
-    STACK stack = {};
+    STACK stack = {};   
 
     stack_ctor (&stack, 5);
 

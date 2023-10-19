@@ -22,6 +22,10 @@ const char *REG[] = {
     "rdx"
 };
 
+#define DEF_CMD(name, code)                     \
+    case (name):                                \
+        code
+
 void print_text (TEXT *data)
 {
     my_assert (data != NULL);
@@ -30,30 +34,8 @@ void print_text (TEXT *data)
     {
         switch (data->cmd[id].command)
         {
-            case (PUSH + (1 << 5)):
-            {
-                fprintf (data->fp_print, "%s %s\n", COMMAND[PUSH], REG[data->cmd[id].reg - 1]);
-                
-                break;
-            }
-            case (PUSH + (1 << 4)):
-            {
-                fprintf (data->fp_print, "%s %d\n", COMMAND[PUSH], (data->cmd[id].argc));
-                
-                break;
-            }
-            case (POP + (1 << 5)):
-            {
-                fprintf (data->fp_print, "%s %s\n", COMMAND[POP], REG[data->cmd[id].reg - 1]);
-                
-                break;
-            }
-            case (HLT):
-            {
-                fprintf (data->fp_print, "%s", COMMAND[data->cmd[id].command]);
-                
-                break;
-            }
+            #include "commands.h"
+
             default:
             {
                 fprintf (data->fp_print, "%s\n", COMMAND[data->cmd[id].command]);
@@ -63,3 +45,5 @@ void print_text (TEXT *data)
         }
     }
 }
+
+#undef DEF_CMD

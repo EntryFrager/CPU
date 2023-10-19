@@ -1,6 +1,9 @@
 push 1
+pop rax
+push rax
 push 2
 add
+out
 sin
 out
 hlt
