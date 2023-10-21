@@ -1,20 +1,24 @@
 #include "func_ass.h"
 
-size_t number_of_commands (const char *data, const size_t size)
+void number_of_commands (TEXT *data)
 {
     my_assert (data != NULL);
 
-    size_t n = 1;
+    data->n_comms++;
+    data->n_words++;
 
-    for (size_t i = 1; i < size; i++)
+    for (size_t i = 1; i < data->size_file; i++)
     {
-        if (data[i] == '\n' && data[i - 1] != '\n')
+        if ((data->buf[i] == '\n' && data->buf[i - 1] != '\n') || data->buf[i] == ' ')
         {
-            n++;
+            data->n_words++;
+        }
+
+        if (data->buf[i] == '\n' && data->buf[i - 1] != '\n')
+        {
+            data->n_comms++;
         }
     }
-
-    return n;
 }
 
 size_t get_file_size (FILE *stream)

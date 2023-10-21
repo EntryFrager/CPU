@@ -1,144 +1,72 @@
-DEF_CMD (HLT, false, 
-    {
-        data->cmd[pos_cmd].command = command;
-        break;
-    },
+DEF_CMD ("hlt", HLT, false,
     {
         fprintf (data->fp_print, "Расчёт окончен.\n");
         return ERR_NO;
     })
 
-DEF_CMD (OUT, false,
-    {
-        data->cmd[pos_cmd].command = command;
-        break;
-    },
+DEF_CMD ("out", OUT, false,
     {
         fprintf (data->fp_print, "Ответ: %lf\n", stack->data[stack->position - 1]);
-        break;
     })
 
-DEF_CMD (PUSH + (1 << 4), true, 
+DEF_CMD ("push", PUSH, true,
     {
-        data->cmd[pos_cmd].command = command;
-        data->cmd[pos_cmd].argc = data->buf[++id];
-        break;
-    },
-    {
-        stack_push (stack, data->cmd[id].argc);
-        break;
+        if (data->cmd[id].reg != VALUE_DEFAULT)
+        {
+            DEF_PUSH (REG_VALUE[data->cmd[id].reg - 1]);
+        }
+        else
+        {
+            DEF_PUSH (data->cmd[id].argc);
+        }
     })
 
-DEF_CMD (PUSH + (1 << 5), true, 
+DEF_CMD ("add", ADD, false,
     {
-        data->cmd[pos_cmd].command = command;
-        data->cmd[pos_cmd].reg = data->buf[++id];
-        break;
-    },
-    {
-        stack_push (stack, REG_VALUE[data->cmd[id].reg - 1]);
-        break;
+        DEF_PUSH (DEF_POP + DEF_POP);
     })
 
-DEF_CMD (POP + (1 << 5), true,
+DEF_CMD ("sub", SUB, false,
     {
-        data->cmd[pos_cmd].command = POP + (1 << 5);
-        data->cmd[pos_cmd].reg = data->buf[++id];
-        break;
-    },
-    {
-        REG_VALUE[data->cmd[id].reg - 1] = stack_pop (stack);
-        break;
+        ELEMENT a = DEF_POP;
+        ELEMENT b = DEF_POP;
+
+        DEF_PUSH (b - a);
     })
 
-DEF_CMD (ADD, false, 
+DEF_CMD ("mul", MUL, false,
     {
-        data->cmd[pos_cmd].command = command;   \
-        break;
-    },
-    {
-        stack_push (stack, stack_pop (stack) + stack_pop (stack));
-        break;
+        DEF_PUSH (DEF_POP * DEF_POP);
     })
 
-DEF_CMD (SUB, false, 
+DEF_CMD ("div", DIV, false,
     {
-        data->cmd[pos_cmd].command = command;   \
-        break;
-    },
-    {
-        stack_push (stack, - stack_pop (stack) + stack_pop (stack));
-        break;
+        DEF_PUSH ((1 / DEF_POP) * DEF_POP);
     })
 
-DEF_CMD (MUL, false, 
+DEF_CMD ("sin", SIN, false,
     {
-        data->cmd[pos_cmd].command = command;   \
-        break;
-    },
-    {
-        stack_push (stack, stack_pop (stack) * stack_pop (stack));
-        break;
+        DEF_PUSH ((ELEMENT) sin (DEF_POP));
     })
 
-DEF_CMD (DIV, false, 
+DEF_CMD ("cos", COS, false,
     {
-        data->cmd[pos_cmd].command = command;   \
-        break;
-    },
-    {
-        stack_push (stack, (1 / stack_pop (stack)) * stack_pop (stack));
-        break;
+        DEF_PUSH ((ELEMENT) cos (DEF_POP));
     })
 
-DEF_CMD (SIN, false, 
+DEF_CMD ("sqrt", SQRT, false,
     {
-        data->cmd[pos_cmd].command = command;   \
-        break;
-    },
-    {
-        stack_push (stack, (ELEMENT) sin (stack_pop (stack)));
-        break;
+        DEF_PUSH ((ELEMENT) sqrt (DEF_POP));
     })
 
-DEF_CMD (COS, false, 
-    {
-        data->cmd[pos_cmd].command = command;   \
-        break;
-    },
-    {
-        stack_push (stack, (ELEMENT) cos (stack_pop (stack)));
-        break;
-    })
-
-DEF_CMD (SQRT, false, 
-    {
-        data->cmd[pos_cmd].command = command;   \
-        break;
-    },
-    {
-        stack_push (stack, (ELEMENT) sqrt (stack_pop (stack)));
-        break;
-    })
-
-DEF_CMD (IN, false, 
-    {
-        data->cmd[pos_cmd].command = command;   \
-        break;
-    },
+DEF_CMD ("in", IN, false,
     {
         ELEMENT value = 0;
         scanf ("%lf", &value);
-        stack_push (stack, (ELEMENT) value);
-        break;
+        DEF_PUSH ((ELEMENT) value);
     })
 
-DEF_CMD (POP, false, 
+DEF_CMD ("pop", POP, true,
     {
-        data->cmd[pos_cmd].command = command;   \
-        break;
-    },
-    {
-        stack_pop (stack);
-        break;
+        REG_VALUE[data->cmd[id].reg - 1] = DEF_POP;
     })

@@ -8,10 +8,6 @@
 
 #include "..\include\error.h"
 
-#define PUSH(arg) stack_push (&stack, arg)
-
-#define POP() stack_pop (&stack)
-
 enum COMMANDS_CODE {
     HLT,
     OUT,
@@ -38,12 +34,15 @@ enum REG {
 
 const size_t REG_CNT = 4;
 
-const int COMMANDS_DEFAULT = 0;
+const int VALUE_DEFAULT = 0;
+
+const int HAVE_REG = 1 << 5;
+const int HAVE_ARG = 1 << 4;
 
 typedef struct {
-    int command = COMMANDS_DEFAULT;
-    int argc = COMMANDS_DEFAULT;
-    int reg = COMMANDS_DEFAULT;
+    int command = VALUE_DEFAULT;
+    int argc = VALUE_DEFAULT;
+    int reg = VALUE_DEFAULT;
 } COMMANDS;
 
 typedef struct {
@@ -55,8 +54,8 @@ typedef struct {
 
     int *buf = NULL;
 
-    size_t size_file = 0;
-    size_t n_cmd = 0;
+    size_t size_file = VALUE_DEFAULT;
+    size_t n_cmd = VALUE_DEFAULT;
 
     COMMANDS *cmd = NULL;
 } TEXT;
@@ -68,5 +67,7 @@ int split_commands (TEXT *data);
 size_t number_of_commands (const int *data, const size_t size);
 
 size_t get_file_size (FILE *stream);
+
+void text_free (TEXT *data);
 
 #endif //FUNC_H

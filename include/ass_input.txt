@@ -1,9 +1,13 @@
 push 1
-pop rax
-push rax
 push 2
 add
 out
-sin
+push 3
+push 4
+push 5
+pop rax
+sub
+out
+sub
 out
 hlt

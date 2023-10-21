@@ -34,9 +34,17 @@ enum REG {
 
 const size_t REG_CNT = 4;
 
+const int HAVE_REG = 1 << 5;
+const int HAVE_ARG = 1 << 4;
+
+const int VALUE_DEFAULT = 0;
+
 typedef struct {
-    size_t size_str = 0;
+    size_t size_str = VALUE_DEFAULT;
     char *command = NULL;
+    char *param = NULL;
+    int argc = VALUE_DEFAULT;
+    int reg = VALUE_DEFAULT;
 } COMMANDS;
 
 typedef struct {
@@ -50,13 +58,14 @@ typedef struct {
 
     char *buf = NULL;
 
-    size_t size_file = 0;
-    size_t n_comms = 0;
+    size_t size_file = VALUE_DEFAULT;
+    size_t n_comms = VALUE_DEFAULT;
+    size_t n_words = VALUE_DEFAULT;
 
     COMMANDS *cmd = NULL;
 } TEXT;
 
-size_t number_of_commands (const char *data, const size_t size);
+void number_of_commands (TEXT *data);
 
 char *move_point (TEXT *data, const char *buf);
 

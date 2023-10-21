@@ -35,9 +35,27 @@ int input_text (TEXT* data)
     return code_error;
 }
 
-#define DEF_CMD(name, mode, code_input, code_calc)          \
-    case (name):                                            \
-        code_input
+#define DEF_CMD(name, num, have_param, code)                                            \
+    case (num):                                                                         \
+        {                                                                               \
+            data->cmd[pos_cmd].command = num;                                           \
+            if (have_param)                                                             \
+            {                                                                           \
+                if (command == (num + HAVE_ARG))                                        \
+                {                                                                       \
+                    data->cmd[pos_cmd].argc = data->buf[++id];                          \
+                }                                                                       \
+                else if (command == (num + HAVE_REG))                                   \
+                {                                                                       \
+                    data->cmd[pos_cmd].reg  = data->buf[++id];                          \
+                }                                                                       \
+                else                                                                    \
+                {                                                                       \
+                    return ERR_COMMAND;                                                 \
+                }                                                                       \
+            }                                                                           \
+            break;                                                                      \
+        }
 
 int split_commands (TEXT *data)
 {   
@@ -53,7 +71,7 @@ int split_commands (TEXT *data)
     {
         int command = data->buf[id];
 
-        switch (command)
+        switch (command & 0xF)
         {
             #include "..\include\commands.h"
 
@@ -77,7 +95,7 @@ size_t number_of_commands (const int *data, const size_t size)
     for (size_t i = 0; i < size; i++)
     {
         n++;
-        if (data[i] == (PUSH + (1 << 4)) || data[i] == (PUSH + (1 << 5)) || data[i] == (POP + (1 << 5)) || data[i] == POP)
+        if (data[i] == (PUSH + HAVE_ARG) || data[i] == (PUSH + HAVE_REG) || data[i] == (POP + HAVE_REG))
         {
             i++;
         }
@@ -96,4 +114,20 @@ size_t get_file_size (FILE *stream)
     rewind (stream);
 
     return size_file;
+}
+
+void text_free(TEXT *data)
+{
+    my_assert (data != NULL)
+
+    free (data->buf);
+    free (data->cmd);
+    data->buf = NULL;
+    data->cmd = NULL;
+
+    data->fp_input = NULL;
+    data->fp_print = NULL;
+
+    data->n_cmd = 0;
+    data->size_file = 0;
 }

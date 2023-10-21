@@ -14,26 +14,14 @@ int main ()
         fprintf(stderr, "%s", my_strerr (code_error));
     }
 
-    data.file_name_print = "..\\include\\result.txt";
-
-    data.fp_print = fopen (data.file_name_print, "wb");
-
-    if (data.fp_print == NULL)
-    {
-        fprintf (stderr, "%s", my_strerr (ERR_FOPEN));
-    }
-
     if ((code_error = calc_func (&stack, &data)) != ERR_NO)
     {
         fprintf (stderr, "%s", my_strerr (code_error));
     }
 
-    if (fclose (data.fp_print) != 0)
-    {
-        fprintf (stderr, "%s", my_strerr (ERR_FCLOSE));
-    }
-
     stack_dtor (&stack);
+
+    text_free (&data);
 
     return 0;
 }

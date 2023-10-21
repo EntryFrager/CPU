@@ -1,20 +1,5 @@
 #include "disass.h"
 
-const char *COMMAND[] = {
-    "hlt",
-    "out",
-    "push",
-    "add",
-    "sub",
-    "mul",
-    "div",
-    "sqrt",
-    "sin",
-    "cos",
-    "in",
-    "pop"
-};
-
 const char *REG[] = {
     "rax",
     "rbx",
@@ -22,11 +7,35 @@ const char *REG[] = {
     "rdx"
 };
 
-#define DEF_CMD(name, code)                     \
-    case (name):                                \
-        code
+#define DEF_CMD(name, num, have_param, code)                                                                            \
+    case (num):                                                                                                         \
+        {                                                                                                               \
+            if (have_param)                                                                                             \
+            {                                                                                                           \
+                if (data->cmd[id].reg != VALUE_DEFAULT)                                                                 \
+                {                                                                                                       \
+                    fprintf (data->fp_print, "%s %s\n", name, REG[data->cmd[id].reg - 1]);                              \
+                }                                                                                                       \
+                else                                                                                                    \
+                {                                                                                                       \
+                    fprintf (data->fp_print, "%s %d\n", name, data->cmd[id].argc);                                      \
+                }                                                                                                       \
+            }                                                                                                           \
+            else                                                                                                        \
+            {                                                                                                           \
+                if (num == 0)                                                                                           \
+                {                                                                                                       \
+                    fprintf (data->fp_print, "%s", name);                                                               \
+                }                                                                                                       \
+                else                                                                                                    \
+                {                                                                                                       \
+                    fprintf (data->fp_print, "%s\n", name);                                                             \
+                }                                                                                                       \
+            }                                                                                                           \
+            break;                                                                                                      \
+        }
 
-void print_text (TEXT *data)
+int print_text (TEXT *data)
 {
     my_assert (data != NULL);
     
@@ -34,16 +43,14 @@ void print_text (TEXT *data)
     {
         switch (data->cmd[id].command)
         {
-            #include "commands.h"
+            #include "..\include\commands.h"
 
             default:
-            {
-                fprintf (data->fp_print, "%s\n", COMMAND[data->cmd[id].command]);
-                
-                break;
-            }
+                return ERR_COMMAND;
         }
     }
+
+    return ERR_NO;
 }
 
 #undef DEF_CMD

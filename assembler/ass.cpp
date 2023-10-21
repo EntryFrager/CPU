@@ -1,6 +1,6 @@
 #include "ass.h"
 
-const char *COMMAND[] = {
+char *COMMAND[] = {
     "hlt",
     "out",
     "push",
@@ -8,18 +8,11 @@ const char *COMMAND[] = {
     "sub",
     "mul",
     "div",
-    "sqrt",
     "sin",
     "cos",
+    "sqrt",
     "in",
     "pop"
-};
-
-const char *REG[] = {
-    "rax",
-    "rbx",
-    "rcx",
-    "rdx"
 };
 
 int input_text (TEXT* data)
@@ -63,7 +56,7 @@ void split_commands (TEXT *data)
 {   
     my_assert (data != NULL);
 
-    data->n_comms =  number_of_commands (data->buf, data->size_file);
+    number_of_commands (data);
 
     data->cmd = (COMMANDS *) calloc (data->n_comms, sizeof(COMMANDS));
     my_assert (data->cmd != NULL);
@@ -89,25 +82,105 @@ void split_commands (TEXT *data)
     }   
 }
 
-#define DEF_CMD(num, code)                                                      \
-    size_t cmd_len_##num = strlen (#num);                                       \
-    if (strncmp (data->cmd[id].command, COMMAND[num], cmd_len_##num) == 0)      \
-    {                                                                           \
-        err++;                                                                  \
-        code                                                                    \
-    }
+#define DEF_CMD(name, num, have_arg, code)                                                              \
+    if (strncasecmp (data->cmd[id].command, name, strlen (name)) == 0)                                  \
+        {                                                                                               \
+            if (get_param (&data->cmd[id], name) != 0)                                                  \
+            {                                                                                           \
+                return ERR_COMMAND;                                                                     \
+            }                                                                                           \
+            if (have_arg)                                                                               \
+            {                                                                                           \
+                if (data->cmd[id].reg != 0)                                                             \
+                {                                                                                       \
+                    fprintf (data->fp_print_txt, "%d %d\n", num + HAVE_REG, data->cmd[id].reg);         \
+                    buf[counter++] = num + HAVE_REG;                                                    \
+                    buf[counter++] = data->cmd[id].reg;                                                 \
+                }                                                                                       \
+                else                                                                                    \
+                {                                                                                       \
+                    fprintf (data->fp_print_txt, "%d %d\n", num + HAVE_ARG, data->cmd[id].argc);        \
+                    buf[counter++] = num + HAVE_ARG;                                                    \
+                    buf[counter++] = data->cmd[id].argc;                                                \
+                }                                                                                       \
+            }                                                                                           \
+            else                                                                                        \
+            {                                                                                           \
+                buf[counter++] = num;                                                                   \
+                if (num == 0)                                                                           \
+                {                                                                                       \
+                    fprintf (data->fp_print_txt, "%d", num);                                            \
+                }                                                                                       \
+                else                                                                                    \
+                {                                                                                       \
+                    fprintf (data->fp_print_txt, "%d\n", num);                                          \
+                }                                                                                       \
+            }                                                                                           \
+        }                                                                                               \
+    else
 
 int print_text (TEXT *data)
 {
     my_assert (data != NULL);
 
+    int *buf = NULL;
+    int counter = 0;
+
+    buf = (int *) calloc (data->n_words, sizeof (int));
+    my_assert (buf != NULL);
+
     for (size_t id = 0; id < data->n_comms; id++)
     {
-        int err = 0;
+        int err = 1;
 
-        #include "commands.h"
-        
+        #include "..\include\commands.h"
+
+        {
+            err = 0;
+        }
+
         if (err != 1)
+        {
+            return ERR_COMMAND;
+        }
+    }
+
+    fwrite (buf, sizeof (int), data->n_words, data->fp_print_bin);
+
+    free(buf);
+
+    return ERR_NO;
+}
+
+#undef DEF_CMD
+
+int get_param (COMMANDS *cmd, char *cmd_str)
+{
+    size_t cmd_len = strlen (cmd_str);
+
+    if (isdigit (*(cmd->command + cmd_len + 1)))
+    {
+        for (size_t i = 0; i < cmd->size_str - cmd_len - 2; i++)
+        {
+            if (!isdigit (*(cmd->command + cmd_len + 1 + i)))
+            {
+                return ERR_COMMAND;
+            }
+        }
+
+        cmd->argc = atoi (cmd->command + cmd_len + 1);
+    }
+    else if ((*(cmd->command + cmd_len + 1) == 'r' && *(cmd->command + cmd_len + 3) == 'x') || (*(cmd->command + cmd_len + 1) == 'R' && *(cmd->command + cmd_len + 3) == 'X'))
+    {
+        if (*(cmd->command + cmd_len + 2) >= 'a' && *(cmd->command + cmd_len + 2) <= 'd')
+        {
+            cmd->reg = *(cmd->command + cmd_len + 2) - 'a' + 1;
+        }
+        else if (*(cmd->command + cmd_len + 2) >= 'A' && *(cmd->command + cmd_len + 2) <= 'D')
+        {
+            cmd->reg = *(cmd->command + cmd_len + 2) - 'A' + 1;
+        }
+        else
         {
             return ERR_COMMAND;
         }
@@ -115,5 +188,3 @@ int print_text (TEXT *data)
 
     return ERR_NO;
 }
-
-#undef DEF_CMD

@@ -4,6 +4,6 @@
 #include "..\include\error.h"
 #include "..\include\func.h"
 
-void print_text (TEXT *data);
+int print_text (TEXT *data);
 
 #endif //DISASS_H
