@@ -2,12 +2,14 @@ push 1
 push 2
 add
 out
+jmp sex
 push 3
 push 4
 push 5
 pop rax
 sub
 out
-sub
+add
 out
+:sex
 hlt

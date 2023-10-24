@@ -23,40 +23,55 @@ DEF_CMD ("push", PUSH, true,
 
 DEF_CMD ("add", ADD, false,
     {
-        DEF_PUSH (DEF_POP + DEF_POP);
+        a = DEF_POP;
+        b = DEF_POP;
+
+        DEF_PUSH (a + b);
     })
 
 DEF_CMD ("sub", SUB, false,
     {
-        ELEMENT a = DEF_POP;
-        ELEMENT b = DEF_POP;
+        a = DEF_POP;
+        b = DEF_POP;
 
         DEF_PUSH (b - a);
     })
 
 DEF_CMD ("mul", MUL, false,
     {
-        DEF_PUSH (DEF_POP * DEF_POP);
+        a = DEF_POP;
+        b = DEF_POP;
+
+        DEF_PUSH (a * b);
     })
 
 DEF_CMD ("div", DIV, false,
     {
-        DEF_PUSH ((1 / DEF_POP) * DEF_POP);
+        a = DEF_POP;
+        b = DEF_POP;
+
+        DEF_PUSH (b / a);
     })
 
 DEF_CMD ("sin", SIN, false,
     {
-        DEF_PUSH ((ELEMENT) sin (DEF_POP));
+        a = DEF_POP;
+
+        DEF_PUSH ((ELEMENT) sin (a));
     })
 
 DEF_CMD ("cos", COS, false,
     {
-        DEF_PUSH ((ELEMENT) cos (DEF_POP));
+        a = DEF_POP;
+
+        DEF_PUSH ((ELEMENT) cos (a));
     })
 
 DEF_CMD ("sqrt", SQRT, false,
     {
-        DEF_PUSH ((ELEMENT) sqrt (DEF_POP));
+        a = DEF_POP;
+
+        DEF_PUSH ((ELEMENT) sqrt (a));
     })
 
 DEF_CMD ("in", IN, false,
@@ -69,4 +84,57 @@ DEF_CMD ("in", IN, false,
 DEF_CMD ("pop", POP, true,
     {
         REG_VALUE[data->cmd[id].reg - 1] = DEF_POP;
+    })
+
+DEF_JUMP_CMD ("jmp", JMP,
+    {
+        id = data->cmd[id].argc - 1;
+    })
+
+DEF_JUMP_CMD ("ja", JA,
+    {
+        if (stack->data[stack->position - 1] > stack->data[stack->position - 2])
+        {
+            id = data->cmd[id].argc - 1;
+        }
+    })
+
+DEF_JUMP_CMD ("jae", JAE,
+    {
+        if (stack->data[stack->position - 1] >= stack->data[stack->position - 2])
+        {
+            id = data->cmd[id].argc - 1;
+        }
+    })
+
+DEF_JUMP_CMD ("jb", JB,
+    {
+        if (stack->data[stack->position - 1] < stack->data[stack->position - 2])
+        {
+            id = data->cmd[id].argc - 1;
+        }
+    })
+
+DEF_JUMP_CMD ("jBE", JBE,
+    {
+        if (stack->data[stack->position - 1] <= stack->data[stack->position - 2])
+        {
+            id = data->cmd[id].argc - 1;
+        }
+    })
+
+DEF_JUMP_CMD ("jE", JE,
+    {
+        if (stack->data[stack->position - 1] == stack->data[stack->position - 2])
+        {
+            id = data->cmd[id].argc - 1;
+        }
+    })
+
+DEF_JUMP_CMD ("jne", JNE,
+    {
+        if (stack->data[stack->position - 1] != stack->data[stack->position - 2])
+        {
+            id = data->cmd[id].argc - 1;
+        }
     })

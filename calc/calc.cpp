@@ -9,7 +9,16 @@ int REG_VALUE[REG_CNT] = {0};
 #define DEF_CMD(name, num, have_arg, code)              \
     case (num):                                         \
         {                                               \
+            ELEMENT a = VALUE_DEFAULT;                  \
+            ELEMENT b = VALUE_DEFAULT;                  \
             code                                        \
+            break;                                      \
+        }
+
+#define DEF_JUMP_CMD(name, num, code)                   \
+    case (num):                                         \
+        {                                               \
+            code;                                       \
             break;                                      \
         }
 
@@ -49,3 +58,5 @@ int calc_func (STACK *stack, TEXT *data)
 }
 
 #undef DEF_CMD
+
+#undef DEF_JUMP_CMD

@@ -12,6 +12,15 @@ enum COMMANDS_CODE {
     HLT,
     OUT,
     PUSH,
+    POP,
+    JMP,
+    JA,
+    JAE,
+    JB,
+    JBE,
+    JE,
+    JNE,
+    LABEL,
     ADD,
     SUB,
     MUL,
@@ -19,11 +28,10 @@ enum COMMANDS_CODE {
     SQRT,
     SIN,
     COS,
-    IN,
-    POP, 
+    IN, 
 };
 
-const size_t COMMAND_CNT = 12;
+const size_t COMMAND_CNT = 19;
 
 enum REG {
     RAX = 1,
@@ -34,10 +42,17 @@ enum REG {
 
 const size_t REG_CNT = 4;
 
-const int HAVE_REG = 1 << 5;
-const int HAVE_ARG = 1 << 4;
+const size_t LABEL_CNT = 10;
+
+const int HAVE_REG = 1 << 6;
+const int HAVE_ARG = 1 << 5;
 
 const int VALUE_DEFAULT = 0;
+
+typedef struct {
+    int label_n_str = VALUE_DEFAULT;
+    char *name_label = NULL;
+} LABELS;
 
 typedef struct {
     size_t size_str = VALUE_DEFAULT;
@@ -59,10 +74,11 @@ typedef struct {
     char *buf = NULL;
 
     size_t size_file = VALUE_DEFAULT;
-    size_t n_comms = VALUE_DEFAULT;
+    size_t n_cmd = VALUE_DEFAULT;
     size_t n_words = VALUE_DEFAULT;
 
     COMMANDS *cmd = NULL;
+    LABELS *label = NULL;
 } TEXT;
 
 void number_of_commands (TEXT *data);

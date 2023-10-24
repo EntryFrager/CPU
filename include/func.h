@@ -12,6 +12,14 @@ enum COMMANDS_CODE {
     HLT,
     OUT,
     PUSH,
+    POP,
+    JMP,
+    JA,
+    JAE,
+    JB,
+    JBE,
+    JE,
+    JNE,
     ADD,
     SUB,
     MUL,
@@ -20,10 +28,9 @@ enum COMMANDS_CODE {
     SIN,
     COS,
     IN,
-    POP
 };
 
-const size_t COMMAND_CNT = 12;
+const size_t COMMAND_CNT = 19;
 
 enum REG {
     RAX = 1,
@@ -36,8 +43,8 @@ const size_t REG_CNT = 4;
 
 const int VALUE_DEFAULT = 0;
 
-const int HAVE_REG = 1 << 5;
-const int HAVE_ARG = 1 << 4;
+const int HAVE_REG = 1 << 6;
+const int HAVE_ARG = 1 << 5;
 
 typedef struct {
     int command = VALUE_DEFAULT;

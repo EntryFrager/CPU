@@ -4,7 +4,7 @@ void number_of_commands (TEXT *data)
 {
     my_assert (data != NULL);
 
-    data->n_comms++;
+    data->n_cmd++;
     data->n_words++;
 
     for (size_t i = 1; i < data->size_file; i++)
@@ -16,7 +16,7 @@ void number_of_commands (TEXT *data)
 
         if (data->buf[i] == '\n' && data->buf[i - 1] != '\n')
         {
-            data->n_comms++;
+            data->n_cmd++;
         }
     }
 }
@@ -31,4 +31,24 @@ size_t get_file_size (FILE *stream)
     rewind (stream);
 
     return size_file;
+}
+
+void text_free(TEXT *data)
+{
+    my_assert (data != NULL)
+
+    free (data->buf);
+    free (data->cmd);
+    free (data->label);
+    data->buf = NULL;
+    data->cmd = NULL;
+    data->label = NULL;
+
+    data->fp_input = NULL;
+    data->fp_print_txt = NULL;
+    data->fp_print_bin = NULL;
+
+    data->n_cmd = VALUE_DEFAULT;
+    data->size_file = VALUE_DEFAULT;
+    data->n_words = VALUE_DEFAULT;
 }

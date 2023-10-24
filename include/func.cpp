@@ -57,6 +57,21 @@ int input_text (TEXT* data)
             break;                                                                      \
         }
 
+#define DEF_JUMP_CMD(name, num, code)                                                   \
+    case (num):                                                                         \
+        {                                                                               \
+            data->cmd[pos_cmd].command = num;                                           \
+            if (command == (num + HAVE_ARG))                                            \
+            {                                                                           \
+                data->cmd[pos_cmd].argc = data->buf[++id];                              \
+            }                                                                           \
+            else                                                                        \
+            {                                                                           \
+                return ERR_COMMAND;                                                     \
+            }                                                                           \
+            break;                                                                      \
+        }
+
 int split_commands (TEXT *data)
 {   
     my_assert (data != NULL);
@@ -71,7 +86,7 @@ int split_commands (TEXT *data)
     {
         int command = data->buf[id];
 
-        switch (command & 0xF)
+        switch (command & 0x1F)
         {
             #include "..\include\commands.h"
 
@@ -86,6 +101,8 @@ int split_commands (TEXT *data)
 
 #undef DEF_CMD
 
+#undef DEF_JUMP_CMD
+
 size_t number_of_commands (const int *data, const size_t size)
 {
     my_assert (data != NULL);
@@ -95,7 +112,16 @@ size_t number_of_commands (const int *data, const size_t size)
     for (size_t i = 0; i < size; i++)
     {
         n++;
+        
         if (data[i] == (PUSH + HAVE_ARG) || data[i] == (PUSH + HAVE_REG) || data[i] == (POP + HAVE_REG))
+        {
+            i++;
+        }
+        else if (data[i] == (JMP + HAVE_ARG) || data[i] == (JA + HAVE_ARG) || data[i] == (JAE + HAVE_ARG))
+        {
+            i++;
+        }
+        else if (data[i] == (JB + HAVE_ARG) || data[i] == (JBE + HAVE_ARG) || data[i] == (JE + HAVE_ARG) || data[i] == (JNE + HAVE_ARG))
         {
             i++;
         }
@@ -128,6 +154,6 @@ void text_free(TEXT *data)
     data->fp_input = NULL;
     data->fp_print = NULL;
 
-    data->n_cmd = 0;
-    data->size_file = 0;
+    data->n_cmd = VALUE_DEFAULT;
+    data->size_file = VALUE_DEFAULT;
 }

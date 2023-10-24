@@ -58,7 +58,7 @@ void split_commands (TEXT *data)
 
     number_of_commands (data);
 
-    data->cmd = (COMMANDS *) calloc (data->n_comms, sizeof(COMMANDS));
+    data->cmd = (COMMANDS *) calloc (data->n_cmd, sizeof(COMMANDS));
     my_assert (data->cmd != NULL);
 
     (data->cmd)[0].command = data->buf;
@@ -119,22 +119,69 @@ void split_commands (TEXT *data)
         }                                                                                               \
     else
 
+#define DEF_JUMP_CMD(name, num, code)                                                                                                                                           \
+    if (strncasecmp (data->cmd[id].command, name, strlen (name)) == 0)                                                                                                          \
+    {                                                                                                                                                                           \
+        buf[counter++] = num + HAVE_ARG;                                                                                                                                        \
+        if (sscanf (data->cmd[id].command + strlen (name) + 1, "%d", &value) == 1)                                                                                              \
+        {                                                                                                                                                                       \
+            buf[counter++] = value;                                                                                                                                             \
+            fprintf (data->fp_print_txt, "%d  %d\n", num, value);                                                                                                               \
+        }                                                                                                                                                                       \
+        else                                                                                                                                                                    \
+        {                                                                                                                                                                       \
+            for (size_t label_pos = 0; label_pos < LABEL_CNT; label_pos++)                                                                                                      \
+            {                                                                                                                                                                   \
+                if (strncasecmp (data->label[label_pos].name_label, data->cmd[id].command + strlen (name) + 1, strlen (data->label[label_pos].name_label)) == 0)                \
+                {                                                                                                                                                               \
+                    buf[counter++] = data->label[label_pos].label_n_str;                                                                                                        \
+                    fprintf (data->fp_print_txt, "%d %d\n", num + HAVE_ARG, data->label[label_pos].label_n_str);                                                                \
+                    break;                                                                                                                                                      \
+                }                                                                                                                                                               \
+                else                                                                                                                                                            \
+                {                                                                                                                                                               \
+                    err = 0;                                                                                                                                                    \
+                }                                                                                                                                                               \
+            }                                                                                                                                                                   \
+        }                                                                                                                                                                       \
+        if (err == 0)                                                                                                                                                           \
+        {                                                                                                                                                                       \
+            return ERR_COMMAND;                                                                                                                                                 \
+        }                                                                                                                                                                       \
+    }                                                                                                                                                                           \
+    else                                                                                                                                                                        \
+
 int print_text (TEXT *data)
 {
     my_assert (data != NULL);
 
     int *buf = NULL;
     int counter = 0;
+    int label_count = 0;
+    int value = 0;
 
     buf = (int *) calloc (data->n_words, sizeof (int));
     my_assert (buf != NULL);
 
-    for (size_t id = 0; id < data->n_comms; id++)
+    data->label = (LABELS *) calloc (LABEL_CNT, sizeof (LABELS));
+    my_assert (data->label != NULL);
+
+    for (size_t id = 0; id < data->n_cmd; id++)
+    {
+        if (*data->cmd[id].command == ':')
+        {
+            data->label[label_count].name_label = data->cmd[id].command + 1;
+            data->label[label_count++].label_n_str = id;
+        }
+    }
+
+    for (size_t id = 0; id < data->n_cmd; id++)
     {
         int err = 1;
 
         #include "..\include\commands.h"
 
+        if (*data->cmd[id].command != ':')
         {
             err = 0;
         }
@@ -147,12 +194,14 @@ int print_text (TEXT *data)
 
     fwrite (buf, sizeof (int), data->n_words, data->fp_print_bin);
 
-    free(buf);
+    free (buf);
 
     return ERR_NO;
 }
 
 #undef DEF_CMD
+
+#undef DEF_JUMP_CMD
 
 int get_param (COMMANDS *cmd, char *cmd_str)
 {
