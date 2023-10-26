@@ -30,3 +30,5 @@ $(EXECUTABLE): $(OBJECTS)
 clean:
 	rm -rf *.o assembler
 	rm -rf assembler.exe
+	rm -rf assembler.exe.log
+	rm -rf assembler.exe.log.dmp

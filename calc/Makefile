@@ -30,3 +30,5 @@ $(EXECUTABLE): $(OBJECTS)
 clean:
 	rm -rf *.o calc
 	rm -rf calc.exe
+	rm -rf calc.exe.log
+	rm -rf calc.exe.log.dmp

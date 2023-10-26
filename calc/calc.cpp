@@ -53,6 +53,20 @@ int calc_func (STACK *stack, TEXT *data)
             default:
                 return ERR_COMMAND;
         }
+
+        for (size_t ram_pos = 0; ram_pos < SIZE_RAM; ram_pos++)
+        {
+            if (ram[ram_pos] == 0)
+            {
+                printf (".");
+            }
+            else
+            {
+                printf ("*");
+            }
+        }
+
+        printf ("\n");
     }
 
     if (fclose (data->fp_print) != 0)

@@ -6,7 +6,6 @@ DEF_CMD ("hlt", HLT, false,
 
 DEF_CMD ("out", OUT, false,
     {
-        printf ("%lld\n", stack->data[stack->position - 1]);
         fprintf (data->fp_print, "Ответ: %lld\n", stack->data[stack->position - 1]);
     })
 
@@ -20,6 +19,8 @@ DEF_CMD ("push", PUSH, true,
             }
 
             DEF_PUSH (stack, ram[REG_VALUE[data->cmd[id].reg - 1]]);
+
+            ram[REG_VALUE[data->cmd[id].reg - 1]] = 0;
         }
         else if (data->cmd[id].ram != VALUE_DEFAULT)
         {
@@ -29,6 +30,8 @@ DEF_CMD ("push", PUSH, true,
             }
 
             DEF_PUSH (stack, ram[data->cmd[id].argc]);
+
+            ram[data->cmd[id].argc] = 0;
         }
         else if (data->cmd[id].reg != VALUE_DEFAULT)
         {
