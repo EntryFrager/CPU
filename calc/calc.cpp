@@ -2,9 +2,9 @@
 
 int REG_VALUE[REG_CNT] = {0};
 
-#define DEF_PUSH(arg) stack_push (stack, arg)
+#define DEF_PUSH(stack_name, arg) stack_push (stack_name, arg)
 
-#define DEF_POP stack_pop (stack)
+#define DEF_POP(stack_name) stack_pop (stack_name)
 
 #define DEF_CMD(name, num, have_arg, code)              \
     case (num):                                         \
@@ -27,7 +27,12 @@ int calc_func (STACK *stack, TEXT *data)
     assert_stack (stack);
     my_assert (data != NULL);
 
-    data->file_name_print = "..\\include\\result.txt";
+    STACK stack_call = {};
+    stack_ctor (&stack_call, LABEL_CNT);
+
+    int ram[SIZE_RAM] = {0};
+
+    data->file_name_print = "..\\result.txt";
 
     data->fp_print = fopen (data->file_name_print, "wb");
 
@@ -43,6 +48,7 @@ int calc_func (STACK *stack, TEXT *data)
         switch (data->cmd[id].command)
         {
             #include "..\include\commands.h"
+            #include "..\include\jump_cmd.h"
 
             default:
                 return ERR_COMMAND;
@@ -53,6 +59,8 @@ int calc_func (STACK *stack, TEXT *data)
     {
         fprintf (stderr, "%s", my_strerr (ERR_FCLOSE));
     }
+
+    stack_dtor (&stack_call);
 
     return ERR_NO;
 }

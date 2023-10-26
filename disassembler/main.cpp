@@ -13,7 +13,7 @@ int main ()
         return 0;
     }
 
-    data.file_name_print = "..\\include\\ass_input.txt";
+    data.file_name_print = "..\\ass_input.txt";
 
     data.fp_print = fopen (data.file_name_print, "w");
 

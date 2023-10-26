@@ -8,7 +8,7 @@
         abort (); \
     }
 
-const int ERROR_CNT = 8;
+const int ERROR_CNT = 10;
 
 enum code_error {                               ///< Error codes.
     ERR_NO,                                     ///< No error.
@@ -16,9 +16,11 @@ enum code_error {                               ///< Error codes.
     ERR_FCLOSE,                                 ///< Error closing file.
     ERR_FREAD,                                  ///< Error when reading text from file
     ERR_ARGC,
-    ERR_REG_PUSH,
-    ERR_REG_POP,
+    ERR_LABEL,
+    ERR_RAM,
+    ERR_REG,
     ERR_COMMAND,
+    ERR_INPUT_ARG
 };
 
 const char* my_strerr (unsigned code_error);    ///< Error return function.

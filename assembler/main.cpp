@@ -11,8 +11,8 @@ int main ()
         fprintf(stderr, "%s", my_strerr (code_error));
     }
 
-    data.file_name_print_bin = "..\\include\\ass_output.bin";
-    data.file_name_print_txt = "..\\include\\ass_output.txt";
+    data.file_name_print_bin = "..\\ass_output.bin";
+    data.file_name_print_txt = "..\\ass_output.txt";
 
     data.fp_print_bin = fopen (data.file_name_print_bin, "w + b");
     data.fp_print_txt = fopen (data.file_name_print_txt, "w");

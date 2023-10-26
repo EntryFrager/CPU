@@ -30,3 +30,5 @@ $(EXECUTABLE): $(OBJECTS)
 clean:
 	rm -rf *.o disassembler
 	rm -rf disassembler.exe
+	rm -rf disassembler.exe.log
+	rm -rf disassembler.exe.log.dmp

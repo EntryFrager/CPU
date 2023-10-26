@@ -13,6 +13,8 @@ enum COMMANDS_CODE {
     OUT,
     PUSH,
     POP,
+    CALL,
+    RET,
     JMP,
     JA,
     JAE,
@@ -31,7 +33,7 @@ enum COMMANDS_CODE {
     IN, 
 };
 
-const size_t COMMAND_CNT = 19;
+const size_t COMMAND_CNT = 22;
 
 enum REG {
     RAX = 1,
@@ -44,6 +46,7 @@ const size_t REG_CNT = 4;
 
 const size_t LABEL_CNT = 10;
 
+const int HAVE_RAM = 1 << 7;
 const int HAVE_REG = 1 << 6;
 const int HAVE_ARG = 1 << 5;
 
@@ -60,6 +63,7 @@ typedef struct {
     char *param = NULL;
     int argc = VALUE_DEFAULT;
     int reg = VALUE_DEFAULT;
+    int ram = VALUE_DEFAULT;
 } COMMANDS;
 
 typedef struct {

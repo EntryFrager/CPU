@@ -4,7 +4,7 @@ int input_text (TEXT* data)
 {
     my_assert (data != NULL);
 
-    data->file_name_input = (const char *) "..\\include\\ass_output.bin";
+    data->file_name_input = (const char *) "..\\ass_output.bin";
 
     data->fp_input = fopen (data->file_name_input, "r + b");
 
@@ -41,7 +41,17 @@ int input_text (TEXT* data)
             data->cmd[pos_cmd].command = num;                                           \
             if (have_param)                                                             \
             {                                                                           \
-                if (command == (num + HAVE_ARG))                                        \
+                if (command == (num + HAVE_RAM + HAVE_REG))                             \
+                {                                                                       \
+                    data->cmd[pos_cmd].ram = 1;                                         \
+                    data->cmd[pos_cmd].reg = data->buf[++id];                           \
+                }                                                                       \
+                else if (command == (num + HAVE_RAM + HAVE_ARG))                        \
+                {                                                                       \
+                    data->cmd[pos_cmd].ram = 1;                                         \
+                    data->cmd[pos_cmd].argc = data->buf[++id];                          \
+                }                                                                       \
+                else if (command == (num + HAVE_ARG))                                   \
                 {                                                                       \
                     data->cmd[pos_cmd].argc = data->buf[++id];                          \
                 }                                                                       \
@@ -51,6 +61,7 @@ int input_text (TEXT* data)
                 }                                                                       \
                 else                                                                    \
                 {                                                                       \
+                    printf ("%s\n", name);\
                     return ERR_COMMAND;                                                 \
                 }                                                                       \
             }                                                                           \
@@ -89,6 +100,7 @@ int split_commands (TEXT *data)
         switch (command & 0x1F)
         {
             #include "..\include\commands.h"
+            #include "..\include\jump_cmd.h"
 
             default:
                 return ERR_COMMAND;
@@ -117,7 +129,7 @@ size_t number_of_commands (const int *data, const size_t size)
         {
             i++;
         }
-        else if (data[i] == (JMP + HAVE_ARG) || data[i] == (JA + HAVE_ARG) || data[i] == (JAE + HAVE_ARG))
+        else if (data[i] == (JMP + HAVE_ARG) || data[i] == (JA + HAVE_ARG) || data[i] == (JAE + HAVE_ARG) || data[i] == (CALL + HAVE_ARG))
         {
             i++;
         }

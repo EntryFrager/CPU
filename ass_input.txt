@@ -1,0 +1,14 @@
+push 1
+push 1
+pop rax
+call discr
+hlt
+:discr
+push rax
+push 1
+add
+pop rax
+push rax
+mul
+out
+call discr

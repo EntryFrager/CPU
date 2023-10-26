@@ -4,17 +4,22 @@ void number_of_commands (TEXT *data)
 {
     my_assert (data != NULL);
 
-    data->n_cmd++;
-    data->n_words++;
-
-    for (size_t i = 1; i < data->size_file; i++)
+    for (size_t i = 2; i <= data->size_file; i++)
     {
-        if ((data->buf[i] == '\n' && data->buf[i - 1] != '\n') || data->buf[i] == ' ')
+        if ((data->buf[i] == '\n' && data->buf[i - 2] != '\n') || data->buf[i] == ' ')
+        {
+            data->n_words++;
+        }
+        else if (data->buf[i] == '\0' && data->buf[i - 2] != '\n')
         {
             data->n_words++;
         }
 
-        if (data->buf[i] == '\n' && data->buf[i - 1] != '\n')
+        if (data->buf[i] == '\n' && data->buf[i - 2] != '\n')
+        {
+            data->n_cmd++;
+        }
+        else if (data->buf[i] == '\0' && data->buf[i - 2] != '\n')
         {
             data->n_cmd++;
         }
