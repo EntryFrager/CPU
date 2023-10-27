@@ -1,4 +1,11 @@
+/// @file func_ass.cpp
+
 #include "func_ass.h"
+
+/**
+ * Function that counts the number of commands.
+ * @param[in] data Structure containing all information
+*/
 
 void number_of_commands (TEXT *data)
 {
@@ -26,6 +33,12 @@ void number_of_commands (TEXT *data)
     }
 }
 
+/**
+ * Function returning file size.
+ * @param[in] stream Pointer to file
+ * @param[out] size_file File size
+*/
+
 size_t get_file_size (FILE *stream)
 {
     my_assert (stream != NULL);
@@ -37,6 +50,11 @@ size_t get_file_size (FILE *stream)
 
     return size_file;
 }
+
+/**
+ * Function that clears all variables.
+ * @param[in] data Structure containing all information
+*/
 
 void text_free(TEXT *data)
 {

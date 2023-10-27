@@ -1,4 +1,12 @@
+/// @file ass.cpp
+
 #include "ass.h"
+
+/**
+ * A function that reads text from a file into one buffer.
+ * @param[in] data Structure containing all information
+ * @param[out] code_error Returns the error code
+*/
 
 int input_text (TEXT* data)
 {
@@ -36,6 +44,11 @@ int input_text (TEXT* data)
 
     return ERR_NO;
 }
+
+/**
+ * Function that splits a buffer into lines.
+ * @param[in] data Structure containing all information
+*/
 
 void split_commands (TEXT *data)
 {   
@@ -76,101 +89,101 @@ void split_commands (TEXT *data)
     }
 }
 
-#define DEF_CMD(name, num, have_arg, code)                                                                          \
-    if (strncasecmp (data->cmd[id].command, name, strlen (name)) == 0)                                              \
-        {                                                                                                           \
-            if ((err = get_param (&data->cmd[id], name)) != 0)                                                      \
-            {                                                                                                       \
-                return err;                                                                                         \
-            }                                                                                                       \
-            if (have_arg)                                                                                           \
-            {                                                                                                       \
-                if (data->cmd[id].ram != VALUE_DEFAULT && data->cmd[id].reg != VALUE_DEFAULT)                       \
-                {                                                                                                   \
-                    fprintf (data->fp_print_txt, "%d %d\n", num + HAVE_RAM + HAVE_REG, data->cmd[id].reg);          \
-                    buf[counter++] = num + HAVE_RAM + HAVE_REG;                                                     \
-                    buf[counter++] = data->cmd[id].reg;                                                             \
-                }                                                                                                   \
-                else if (data->cmd[id].ram != VALUE_DEFAULT)                                                        \
-                {                                                                                                   \
-                    fprintf (data->fp_print_txt, "%d %d\n", num + HAVE_RAM + HAVE_ARG, data->cmd[id].argc);         \
-                    buf[counter++] = num + HAVE_RAM + HAVE_ARG;                                                     \
-                    buf[counter++] = data->cmd[id].argc;                                                            \
-                }                                                                                                   \
-                else if (data->cmd[id].reg != VALUE_DEFAULT)                                                        \
-                {                                                                                                   \
-                    fprintf (data->fp_print_txt, "%d %d\n", num + HAVE_REG, data->cmd[id].reg);                     \
-                    buf[counter++] = num + HAVE_REG;                                                                \
-                    buf[counter++] = data->cmd[id].reg;                                                             \
-                }                                                                                                   \
-                else                                                                                                \
-                {                                                                                                   \
-                    fprintf (data->fp_print_txt, "%d %d\n", num + HAVE_ARG, data->cmd[id].argc);                    \
-                    buf[counter++] = num + HAVE_ARG;                                                                \
-                    buf[counter++] = data->cmd[id].argc;                                                            \
-                }                                                                                                   \
-            }                                                                                                       \
-            else                                                                                                    \
-            {                                                                                                       \
-                buf[counter++] = num;                                                                               \
-                if (id == data->n_cmd - 1)                                                                          \
-                {                                                                                                   \
-                    fprintf (data->fp_print_txt, "%d", num);                                                        \
-                }                                                                                                   \
-                else                                                                                                \
-                {                                                                                                   \
-                    fprintf (data->fp_print_txt, "%d\n", num);                                                      \
-                }                                                                                                   \
-            }                                                                                                       \
-        }                                                                                                           \
+/**
+ * Macro for code generation of commands
+ * @param[in] name Сommand name
+ * @param[in] num Command number
+ * @param[in] have_arg The presence of argument
+ * @param[in] code The code this command should execute
+*/
+
+#define DEF_CMD(name, num, have_arg, code)                                                                                                                                                                          \
+    if (strncasecmp (data->cmd[id].command, name, strlen (name)) == 0)                                                                                                                                              \
+        {                                                                                                                                                                                                           \
+            if ((err = get_param (&data->cmd[id], name)) != 0)                                                                                                                                                      \
+            {                                                                                                                                                                                                       \
+                return err;                                                                                                                                                                                         \
+            }                                                                                                                                                                                                       \
+            if (have_arg)                                                                                                                                                                                           \
+            {                                                                                                                                                                                                       \
+                if (data->cmd[id].ram != VALUE_DEFAULT && data->cmd[id].reg != VALUE_DEFAULT)                                                                                                                       \
+                {                                                                                                                                                                                                   \
+                    fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num + HAVE_REG + HAVE_RAM, num + HAVE_REG + HAVE_RAM, data->cmd[id].argc, data->cmd[id].reg, data->cmd[id].ram);        \
+                    buf[counter++] = num + HAVE_RAM + HAVE_REG;                                                                                                                                                     \
+                    buf[counter++] = data->cmd[id].reg;                                                                                                                                                             \
+                }                                                                                                                                                                                                   \
+                else if (data->cmd[id].ram != VALUE_DEFAULT)                                                                                                                                                        \
+                {                                                                                                                                                                                                   \
+                    fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num + HAVE_ARG + HAVE_RAM, num + HAVE_ARG + HAVE_RAM, data->cmd[id].argc, data->cmd[id].reg, data->cmd[id].ram);        \
+                    buf[counter++] = num + HAVE_RAM + HAVE_ARG;                                                                                                                                                     \
+                    buf[counter++] = data->cmd[id].argc;                                                                                                                                                            \
+                }                                                                                                                                                                                                   \
+                else if (data->cmd[id].reg != VALUE_DEFAULT)                                                                                                                                                        \
+                {                                                                                                                                                                                                   \
+                    fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num + HAVE_REG, num + HAVE_REG, data->cmd[id].argc, data->cmd[id].reg, data->cmd[id].ram);                              \
+                    buf[counter++] = num + HAVE_REG;                                                                                                                                                                \
+                    buf[counter++] = data->cmd[id].reg;                                                                                                                                                             \
+                }                                                                                                                                                                                                   \
+                else                                                                                                                                                                                                \
+                {                                                                                                                                                                                                   \
+                    fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num + HAVE_ARG, num + HAVE_ARG, data->cmd[id].argc, data->cmd[id].reg, data->cmd[id].ram);                              \
+                    buf[counter++] = num + HAVE_ARG;                                                                                                                                                                \
+                    buf[counter++] = data->cmd[id].argc;                                                                                                                                                            \
+                }                                                                                                                                                                                                   \
+            }                                                                                                                                                                                                       \
+            else                                                                                                                                                                                                    \
+            {                                                                                                                                                                                                       \
+                buf[counter++] = num;                                                                                                                                                                               \
+                fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num, num, data->cmd[id].argc, data->cmd[id].reg, data->cmd[id].ram);                                                        \
+            }                                                                                                                                                                                                       \
+        }                                                                                                                                                                                                           \
     else
 
-#define DEF_JUMP_CMD(name, num, code)                                                                                                                                           \
-    if (strncasecmp (data->cmd[id].command, name, strlen (name)) == 0)                                                                                                          \
-    {                                                                                                                                                                           \
-        buf[counter++] = num + HAVE_ARG;                                                                                                                                        \
-        if (sscanf (data->cmd[id].command + strlen (name) + 1, "%d", &value) == 1)                                                                                              \
-        {                                                                                                                                                                       \
-            buf[counter++] = value;                                                                                                                                             \
-            if (id == data->n_cmd - 1)                                                                                                                                          \
-            {                                                                                                                                                                   \
-                fprintf (data->fp_print_txt, "%d %d", num + HAVE_ARG, value);                                                                                                   \
-            }                                                                                                                                                                   \
-            else                                                                                                                                                                \
-            {                                                                                                                                                                   \
-                fprintf (data->fp_print_txt, "%d %d\n", num + HAVE_ARG, value);                                                                                                 \
-            }                                                                                                                                                                   \
-        }                                                                                                                                                                       \
-        else                                                                                                                                                                    \
-        {                                                                                                                                                                       \
-            for (size_t label_pos = 0; label_pos < LABEL_CNT; label_pos++)                                                                                                      \
-            {                                                                                                                                                                   \
-                if (strncasecmp (data->label[label_pos].name_label, data->cmd[id].command + strlen (name) + 1, strlen (data->label[label_pos].name_label)) == 0)                \
-                {                                                                                                                                                               \
-                    buf[counter++] = data->label[label_pos].label_n_str;                                                                                                        \
-                    if (id == data->n_cmd - 1)                                                                                                                                  \
-                    {                                                                                                                                                           \
-                        fprintf (data->fp_print_txt, "%d %d", num + HAVE_ARG, data->label[label_pos].label_n_str);                                                              \
-                    }                                                                                                                                                           \
-                    else                                                                                                                                                        \
-                    {                                                                                                                                                           \
-                        fprintf (data->fp_print_txt, "%d %d\n", num + HAVE_ARG, data->label[label_pos].label_n_str);                                                            \
-                    }                                                                                                                                                           \
-                    err = ERR_NO;                                                                                                                                               \
-                    break;                                                                                                                                                      \
-                }                                                                                                                                                               \
-                else                                                                                                                                                            \
-                {                                                                                                                                                               \
-                    err = ERR_LABEL;                                                                                                                                            \
-                }                                                                                                                                                               \
-            }                                                                                                                                                                   \
-        }                                                                                                                                                                       \
-        if (err == ERR_LABEL)                                                                                                                                                   \
-        {                                                                                                                                                                       \
-            return ERR_LABEL;                                                                                                                                                   \
-        }                                                                                                                                                                       \
-    }                                                                                                                                                                           \
-    else                                                                                                                                                                        \
+/**
+ * Macro for code generation of commands like jump
+ * @param[in] name Сommand name
+ * @param[in] num Command number
+ * @param[in] code The code this command should execute
+*/
+
+#define DEF_JUMP_CMD(name, num, code)                                                                                                                                                                               \
+    if (strncasecmp (data->cmd[id].command, name, strlen (name)) == 0)                                                                                                                                              \
+    {                                                                                                                                                                                                               \
+        buf[counter++] = num + HAVE_ARG;                                                                                                                                                                            \
+        if (sscanf (data->cmd[id].command + strlen (name) + 1, "%d", &value) == 1)                                                                                                                                  \
+        {                                                                                                                                                                                                           \
+            buf[counter++] = value;                                                                                                                                                                                 \
+            fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num + HAVE_ARG, num + HAVE_ARG, value, data->cmd[id].reg, data->cmd[id].ram);                                                   \
+        }                                                                                                                                                                                                           \
+        else                                                                                                                                                                                                        \
+        {                                                                                                                                                                                                           \
+            for (size_t label_pos = 0; label_pos < LABEL_CNT; label_pos++)                                                                                                                                          \
+            {                                                                                                                                                                                                       \
+                if (strncasecmp (data->label[label_pos].name_label, data->cmd[id].command + strlen (name) + 1, strlen (data->label[label_pos].name_label)) == 0)                                                    \
+                {                                                                                                                                                                                                   \
+                    buf[counter++] = data->label[label_pos].label_n_str;                                                                                                                                            \
+                        fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num + HAVE_ARG, num + HAVE_ARG, data->label[label_pos].label_n_str, data->cmd[id].reg, data->cmd[id].ram);          \
+                    err = ERR_NO;                                                                                                                                                                                   \
+                    break;                                                                                                                                                                                          \
+                }                                                                                                                                                                                                   \
+                else                                                                                                                                                                                                \
+                {                                                                                                                                                                                                   \
+                    err = ERR_LABEL;                                                                                                                                                                                \
+                }                                                                                                                                                                                                   \
+            }                                                                                                                                                                                                       \
+        }                                                                                                                                                                                                           \
+        if (err == ERR_LABEL)                                                                                                                                                                                       \
+        {                                                                                                                                                                                                           \
+            return ERR_LABEL;                                                                                                                                                                                       \
+        }                                                                                                                                                                                                           \
+    }                                                                                                                                                                                                               \
+    else                                                                                                                                                                                                            \
+
+/**
+ * A function that outputs machine code to a new file.
+ * @param[in] data Structure containing all information
+ * @param[out] code_error Returns the error code
+*/
 
 int print_text (TEXT *data)
 {
@@ -202,6 +215,10 @@ int print_text (TEXT *data)
     buf = (int *) calloc (data->n_words, sizeof (int));
     my_assert (buf != NULL);
 
+    fprintf (data->fp_print_txt, "+------------+------------+------------+------------+------------+------------+\n");
+    fprintf (data->fp_print_txt, "|  NAME_CMD  |  CODE_CMD  |  HEX_SPEAK |  VALUE_ARG |  VALUE_REG |  VALUE_RAM |\n");
+    fprintf (data->fp_print_txt, "+------------+------------+------------+------------+------------+------------+\n");
+
     for (size_t id = 0; id < data->n_cmd; id++)
     {
         int err = ERR_NO;
@@ -218,11 +235,20 @@ int print_text (TEXT *data)
         {
             return err;
         }
+        if (id == (data->n_cmd - 1) && *data->cmd[id].command != ':')
+        {
+            fprintf (data->fp_print_txt, "+------------+------------+------------+------------+------------+------------+");
+        }
+        else if (*data->cmd[id].command != ':')
+        {
+            fprintf (data->fp_print_txt, "+------------+------------+------------+------------+------------+------------+\n");
+        }
     }
 
     fwrite (buf, sizeof (int), data->n_words, data->fp_print_bin);
 
     free (buf);
+    buf = NULL;
 
     return ERR_NO;
 }
@@ -230,6 +256,11 @@ int print_text (TEXT *data)
 #undef DEF_CMD
 
 #undef DEF_JUMP_CMD
+
+/**
+ * Argument checking macro
+ * @param[in] len Takes the length value after the command, before the argument
+*/
 
 #define DEF_GET_PARAM(len)                                                                                                                                                                                  \
     if (isdigit (*(cmd->command + cmd_len + len)))                                                                                                                                                          \
@@ -259,6 +290,13 @@ int print_text (TEXT *data)
         }                                                                                                                                                                                                   \
     }                                                                                                                                                                                                       \
     else
+
+/**
+ * A function that detects whether a command has an argument or not.
+ * @param[in] cmd A structure containing all information about the command line
+ * @param[in] cmd_str A string containing the command name
+ * @param[out] code_error Returns the error code
+*/
 
 int get_param (COMMANDS *cmd, char *cmd_str)
 {

@@ -1,4 +1,10 @@
+/// @file main_spu.cpp
+
 #include "calc.h"
+
+/**
+ * A program that performs actions that have been previously converted by assembler into machine code.
+*/
 
 int main ()
 {

@@ -1,13 +1,27 @@
+/// @file commands.h
+
+/**
+ * The hlt command that stops the program.
+*/
+
 DEF_CMD ("hlt", HLT, false,
     {
         fprintf (data->fp_print, "Расчёт окончен.");
         return ERR_NO;
     })
 
+/**
+ * The command that prints the response.
+*/
+
 DEF_CMD ("out", OUT, false,
     {
-        fprintf (data->fp_print, "Ответ: %lld\n", stack->data[stack->position - 1]);
+        fprintf (data->fp_print, "Ответ: %llf\n", stack->data[stack->position - 1]);
     })
+
+/**
+ * Command that adds an element to memory (stack).
+*/
 
 DEF_CMD ("push", PUSH, true,
     {
@@ -43,70 +57,9 @@ DEF_CMD ("push", PUSH, true,
         }
     })
 
-DEF_CMD ("add", ADD, false,
-    {
-        a = DEF_POP (stack);
-        b = DEF_POP (stack);
-
-        DEF_PUSH (stack, a + b);
-    })
-
-DEF_CMD ("sub", SUB, false,
-    {
-        a = DEF_POP (stack);
-        b = DEF_POP (stack);
-
-        DEF_PUSH (stack, b - a);
-    })
-
-DEF_CMD ("mul", MUL, false,
-    {
-        a = DEF_POP (stack);
-        b = DEF_POP (stack);
-
-        DEF_PUSH (stack, a * b);
-    })
-
-DEF_CMD ("div", DIV, false,
-    {
-        a = DEF_POP (stack);
-        b = DEF_POP (stack);
-
-        DEF_PUSH (stack, b / a);
-    })
-
-DEF_CMD ("sin", SIN, false,
-    {
-        a = DEF_POP (stack);
-
-        DEF_PUSH (stack, (ELEMENT) sin (a));
-    })
-
-DEF_CMD ("cos", COS, false,
-    {
-        a = DEF_POP (stack);
-
-        DEF_PUSH (stack, (ELEMENT) cos (a));
-    })
-
-DEF_CMD ("sqrt", SQRT, false,
-    {
-        a = DEF_POP (stack);
-
-        DEF_PUSH (stack, (ELEMENT) sqrt (a));
-    })
-
-DEF_CMD ("in", IN, false,
-    {
-        ELEMENT value = 0;
-
-        if (scanf ("%lf", &value) != 1)
-        {
-            return ERR_INPUT_ARG;
-        }
-
-        DEF_PUSH (stack, (ELEMENT) value);
-    })
+/**
+ * Command that removes an element from memory (stack).
+*/
 
 DEF_CMD ("pop", POP, true,
     {
@@ -133,6 +86,107 @@ DEF_CMD ("pop", POP, true,
             REG_VALUE[data->cmd[id].reg - 1] = DEF_POP (stack);
         }
     })
+
+/**
+ * Addition command.
+*/
+
+DEF_CMD ("add", ADD, false,
+    {
+        a = DEF_POP (stack);
+        b = DEF_POP (stack);
+
+        DEF_PUSH (stack, a + b);
+    })
+
+/**
+ * Subtraction command.
+*/
+
+DEF_CMD ("sub", SUB, false,
+    {
+        a = DEF_POP (stack);
+        b = DEF_POP (stack);
+
+        DEF_PUSH (stack, b - a);
+    })
+
+/**
+ * Multiply command.
+*/
+
+DEF_CMD ("mul", MUL, false,
+    {
+        a = DEF_POP (stack);
+        b = DEF_POP (stack);
+
+        DEF_PUSH (stack, a * b);
+    })
+
+/**
+ * Division command.
+*/
+
+DEF_CMD ("div", DIV, false,
+    {
+        a = DEF_POP (stack);
+        b = DEF_POP (stack);
+
+        DEF_PUSH (stack, b / a);
+    })
+
+/**
+ * Sine command.
+*/
+
+DEF_CMD ("sin", SIN, false,
+    {
+        a = DEF_POP (stack);
+
+        DEF_PUSH (stack, (ELEMENT) sin (a));
+    })
+
+/**
+ * Cosine command.
+*/
+
+DEF_CMD ("cos", COS, false,
+    {
+        a = DEF_POP (stack);
+
+        DEF_PUSH (stack, (ELEMENT) cos (a));
+    })
+
+/**
+ * Root command.
+*/
+
+DEF_CMD ("sqrt", SQRT, false,
+    {
+        a = DEF_POP (stack);
+
+        DEF_PUSH (stack, (ELEMENT) sqrt (a));
+    })
+
+/**
+ * A command that allows the user to enter a number using an input device.
+*/
+
+DEF_CMD ("in", IN, false,
+    {
+        ELEMENT value = 0;
+
+        if (scanf ("%lf", &value) != 1)
+        {
+            return ERR_INPUT_ARG;
+        }
+
+        DEF_PUSH (stack, (ELEMENT) value);
+    })
+
+/**
+ * Return command to label call command.
+*/
 
 DEF_CMD ("ret", RET, false,
     {

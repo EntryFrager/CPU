@@ -1,4 +1,10 @@
+/// @file main_disass.cpp
+
 #include "disass.h"
+
+/**
+ * This is a program that converts machine code into plain, user-readable code.
+*/
 
 int main ()
 {

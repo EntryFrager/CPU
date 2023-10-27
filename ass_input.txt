@@ -1,5 +1,22 @@
-push 1
-pop [0]
-push [0]
-pop [4]
+in
+in
+in
+pop rcx
+pop rbx
+pop rax
+CALL discr
+push rax
+out
 hlt
+:discr
+push rbx
+push rbx
+mul
+push 4
+push rax
+push rcx
+mul
+mul
+sub
+pop rax
+ret

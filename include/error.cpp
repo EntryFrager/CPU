@@ -9,7 +9,7 @@
 #include "error.h"
 
 /**
- * types of errors
+ * Types of errors.
 */
 
 static const char* err_msgs_arr[] = {

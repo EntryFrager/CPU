@@ -12,7 +12,7 @@
 
 #define CANARIES_CHECK                                                                                                  ///< Macro to enable canary protection.
 
-//#define HASH_CHECK                                                                                                      ///< Macro to enable hashed protection.
+//#define HASH_CHECK                                                                                                    ///< Macro to enable hashed protection.
 
 #ifdef HASH_CHECK
     #define ON_DEBUG(...)                                               \
@@ -31,7 +31,7 @@ static int CODE_ERROR = 0;                                                      
     }                                                                   \
 }
 
-typedef unsigned long long ELEMENT;                                                                                     ///< The type of stack elements.
+typedef double ELEMENT;                                                                                                 ///< The type of stack elements.
 
 const ELEMENT STACK_VALUE_VENOM = -100000;                                                                              ///< Variable containing poison
 

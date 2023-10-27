@@ -1,4 +1,12 @@
+/// @file func.cpp
+
 #include "func.h"
+
+/**
+ * Function that reads information from a file.
+ * @param[in] data Structure containing all information
+ * @param[out] code_error Code error
+*/
 
 int input_text (TEXT* data)
 {
@@ -35,6 +43,14 @@ int input_text (TEXT* data)
     return code_error;
 }
 
+/**
+ * Macro for code generation of commands
+ * @param[in] name Сommand name
+ * @param[in] num Command number
+ * @param[in] have_arg The presence of argument
+ * @param[in] code The code this command should execute
+*/
+
 #define DEF_CMD(name, num, have_param, code)                                            \
     case (num):                                                                         \
         {                                                                               \
@@ -67,6 +83,13 @@ int input_text (TEXT* data)
             }                                                                           \
             break;                                                                      \
         }
+    
+/**
+ * Macro for code generation of commands like jump
+ * @param[in] name Сommand name
+ * @param[in] num Command number
+ * @param[in] code The code this command should execute
+*/
 
 #define DEF_JUMP_CMD(name, num, code)                                                   \
     case (num):                                                                         \
@@ -82,6 +105,12 @@ int input_text (TEXT* data)
             }                                                                           \
             break;                                                                      \
         }
+
+/**
+ * A function that divides the buffer into separate commands.
+ * @param[in] data Structure containing all information
+ * @param[out] code_error Code error
+*/
 
 int split_commands (TEXT *data)
 {   
@@ -115,6 +144,12 @@ int split_commands (TEXT *data)
 
 #undef DEF_JUMP_CMD
 
+/**
+ * Function that counts the number of commands.
+ * @param[in] data Structure containing all information
+ * @param[in] n_cmd
+*/
+
 size_t number_of_commands (const int *data, const size_t size)
 {
     my_assert (data != NULL);
@@ -142,6 +177,12 @@ size_t number_of_commands (const int *data, const size_t size)
     return n;
 }
 
+/**
+ * Function returning file size.
+ * @param[in] stream Pointer to file
+ * @param[out] size_file File size
+*/
+
 size_t get_file_size (FILE *stream)
 {
     my_assert (stream != NULL);
@@ -153,6 +194,11 @@ size_t get_file_size (FILE *stream)
 
     return size_file;
 }
+
+/**
+ * Function that clears all variables.
+ * @param[in] data Structure containing all information
+*/
 
 void text_free(TEXT *data)
 {

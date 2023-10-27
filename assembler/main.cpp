@@ -1,4 +1,10 @@
+/// @file main.cpp
+
 #include "ass.h"
+
+/**
+ * This program converts your code into machine code that is more understandable for the computer.
+*/
 
 int main ()
 {
@@ -31,6 +37,8 @@ int main ()
     {
         fprintf (stderr, "%s", my_strerr (ERR_FCLOSE));
     }
+
+    text_free (&data);
 
     return 0;
 }

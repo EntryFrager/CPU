@@ -1,11 +1,23 @@
 #include "disass.h"
 
+/**
+ * Array wuth registers name.
+*/
+
 const char *REG[] = {
     "rax",
     "rbx",
     "rcx",
     "rdx"
 };
+
+/**
+ * Macro for code generation of commands
+ * @param[in] name Сommand name
+ * @param[in] num Command number
+ * @param[in] have_arg The presence of argument
+ * @param[code] code 
+*/
 
 #define DEF_CMD(name, num, have_param, code)                                                                            \
     case (num):                                                                                                         \
@@ -42,6 +54,13 @@ const char *REG[] = {
             }                                                                                                           \
             break;                                                                                                      \
         }
+
+/**
+ * Macro for code generation of commands like jump
+ * @param[in] name Сommand name
+ * @param[in] num Command number
+ * @param[code] code 
+*/
     
 #define DEF_JUMP_CMD(name, num, code)                                                                                   \
     case (num):                                                                                                         \
@@ -56,6 +75,12 @@ const char *REG[] = {
             }                                                                                                           \
             break;                                                                                                      \
         }
+
+/**
+ * A function that outputs machine code to a new file.
+ * @param[in] data Structure containing all information
+ * @param[out] code_error Returns the error code
+*/
 
 int print_text (TEXT *data)
 {
