@@ -13,16 +13,16 @@
 */
 
 static const char* err_msgs_arr[] = {
-    "Ошибок нет.\n",
-    "ERROR: произошла ошибка при открытии файла.\n",
-    "ERROR: произошла ошибка при закрытии файла.\n",
-    "ERROR: произошла ошибка при считывании текста из файла.\n",
-    "ERROR: введен неверный аргумент.\n",
-    "ERROR: превышено количество меток.\n",
-    "ERROR: обращение к оперативной памяти по неверному адресу.\n",
-    "ERROR: введен неверный регистр.\n",
-    "ERROR: введена неверная комманда.\n",
-    "ERROR: неверно введен аргумент с потокового ввода.\n"
+    "ERROR NO.\n",
+    "ERROR: an error occurred while opening the file.\n",
+    "ERROR: an error occurred while closing the file.\n",
+    "ERROR: an error occurred while reading text from the file.\n",
+    "ERROR: invalid argument entered.\n",
+    "ERROR: number of labels exceeded.\n",
+    "ERROR: accessing RAM at the wrong address.\n",
+    "ERROR: Invalid case entered.\n",
+    "ERROR: invalid command entered.\n",
+    "ERROR: incorrectly entered argument from stream input.\n",
 };
 
 /**

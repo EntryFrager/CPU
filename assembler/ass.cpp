@@ -63,9 +63,11 @@ void split_commands (TEXT *data)
     (data->cmd)[0].size_str = 2;
     int j = 1;
 
+    int comment = 0;
+
     for (size_t id = 2; id <= data->size_file; id++)
     {
-        if (data->buf[id] == '\n' && data->buf[id - 3] != '\0')
+        if ((data->buf[id] == '\n' && data->buf[id - 3] != '\0'))
         {
             *(data->buf + id - 1) = '\0';
 
@@ -81,8 +83,16 @@ void split_commands (TEXT *data)
             data->cmd[j].command = data->buf + (id + 1);
 
             j++;
+
+            comment = 0;
         }
-        else
+        else if (data->buf[id] == ';')
+        {
+            comment = 1;
+
+            *(data->buf + id) = '\0';
+        }
+        else if (comment == 0)
         {
             data->cmd[j - 1].size_str++;
         }
@@ -265,9 +275,9 @@ int print_text (TEXT *data)
 #define DEF_GET_PARAM(len)                                                                                                                                                                                  \
     if (isdigit (*(cmd->command + cmd_len + len)))                                                                                                                                                          \
     {                                                                                                                                                                                                       \
-        for (size_t i = 0; i < cmd->size_str - cmd_len - 2 - len; i++)                                                                                                                                      \
+        for (size_t ip = 0; ip < cmd->size_str - cmd_len - 2 - len; ip++)                                                                                                                                   \
         {                                                                                                                                                                                                   \
-            if (!isdigit (*(cmd->command + cmd_len + len + i)))                                                                                                                                             \
+            if (!isdigit (*(cmd->command + cmd_len + len + ip)))                                                                                                                                            \
             {                                                                                                                                                                                               \
                 return ERR_ARGC;                                                                                                                                                                            \
             }                                                                                                                                                                                               \
