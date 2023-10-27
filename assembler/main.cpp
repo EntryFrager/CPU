@@ -23,10 +23,6 @@ int main ()
     data.fp_print_bin = fopen (data.file_name_print_bin, "w + b");
     data.fp_print_txt = fopen (data.file_name_print_txt, "w");
 
-    printf ("%s %d\n", data.cmd[0].command, data.cmd[0].size_str);
-    printf ("%s %d\n", data.cmd[1].command, data.cmd[1].size_str);
-    //printf ("%s %d\n", data.cmd[2].command, data.cmd[2].size_str);
-
     if (data.fp_print_txt == NULL || data.fp_print_bin == NULL)
     {
         fprintf (stderr, "%s", my_strerr (ERR_FOPEN));
