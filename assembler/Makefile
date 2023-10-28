@@ -15,7 +15,7 @@ OBJECTS = $(SOURCES:.cpp=.o)
 
 EXECUTABLE = assembler
 
-VPATH = D:\vscode\calculator\include
+VPATH = ..\include
 
 all: $(SOURCES) $(EXECUTABLE)
 

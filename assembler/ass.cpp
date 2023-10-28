@@ -2,262 +2,180 @@
 
 #include "ass.h"
 
+#define CHECK_ERROR(expr) int code_error = 0; if ((code_error = expr) != ERR_NO) return code_error;
+
 /**
  * A function that reads text from a file into one buffer.
- * @param[in] data Structure containing all information
+ * @param[in] proc Structure containing all information
  * @param[out] code_error Returns the error code
 */
 
-int input_text (TEXT* data)
+int input_text (SPU *proc)
 {
-    my_assert (data != NULL);
+    my_assert (proc != NULL);
 
-    data->file_name_input = (const char *) "..\\ass_input.txt";
+    proc->fp_input = fopen (proc->file_name_input, "r + b");
 
-    data->fp_input = fopen (data->file_name_input, "r + b");
-
-    if (data->fp_input == NULL)
+    if (proc->fp_input == NULL)
     {
         return ERR_FOPEN;
     }
 
-    data->size_file = get_file_size (data->fp_input);
+    proc->size_file = get_file_size (proc->fp_input);
 
-    data->buf = (char *) calloc (data->size_file + 1, sizeof (char));
-    my_assert (data->buf != NULL);
+    proc->buf_input = (char *) calloc (proc->size_file + 1, sizeof (char));
+    my_assert (proc->buf_input != NULL);
 
-    size_t read_size = fread (data->buf, sizeof (char), data->size_file, data->fp_input);
+    size_t read_size = fread (proc->buf_input, sizeof (char), proc->size_file, proc->fp_input);
 
-    if (read_size != data->size_file)
+    if (read_size != proc->size_file)
     {
         return ERR_FREAD;
     }
 
-    *(data->buf + data->size_file) = '\0';
+    *(proc->buf_input + proc->size_file) = '\0';
 
-    if (fclose (data->fp_input) != 0)
+    if (fclose (proc->fp_input) != 0)
     {
         return ERR_FCLOSE;
     }
 
-    split_commands (data);
+    split_commands (proc);
 
     return ERR_NO;
 }
 
-/**
- * Function that splits a buffer into lines.
- * @param[in] data Structure containing all information
-*/
+void split_commands (SPU *proc)
+{
+    my_assert (proc != NULL);
 
-void split_commands (TEXT *data)
-{   
-    my_assert (data != NULL);
+    number_of_commands (proc);
 
-    number_of_commands (data);
+    proc->cmd = (COMMANDS *) calloc (proc->n_cmd, sizeof (COMMANDS));
 
-    data->cmd = (COMMANDS *) calloc (data->n_cmd, sizeof(COMMANDS));
-    my_assert (data->cmd != NULL);
+    size_t buf_pos_count = 0;
 
-    (data->cmd)[0].command = data->buf;
-    (data->cmd)[0].size_str = 2;
-    int j = 1;
-
-    int comment = 0;
-
-    for (size_t id = 2; id <= data->size_file; id++)
+    for (size_t ip = 0; ip < proc->n_cmd; ip++)
     {
-        if ((data->buf[id] == '\n' && data->buf[id - 3] != '\0'))
+        while (isspace (*(proc->buf_input + buf_pos_count)) != 0 && buf_pos_count < proc->size_file)
         {
-            *(data->buf + id - 1) = '\0';
-
-            for (size_t pos_space = id; id <= data->size_file; pos_space++)
-            {
-                if (data->buf[pos_space] != '\r' && data->buf[pos_space + 1] != '\r')
-                {
-                    id = pos_space;
-                    break;
-                }
-            }
-
-            data->cmd[j].command = data->buf + (id + 1);
-
-            j++;
-
-            comment = 0;
+            buf_pos_count++;
         }
-        else if (data->buf[id] == ';')
+
+        proc->cmd[ip].command = proc->buf_input + buf_pos_count;
+
+        while (*(proc->buf_input + buf_pos_count) != '\r' && buf_pos_count < proc->size_file)
         {
-            comment = 1;
+            buf_pos_count++;
+            proc->cmd[ip].size_str++;
+        }
 
-            *(data->buf + id) = '\0';
-        }
-        else if (comment == 0)
-        {
-            data->cmd[j - 1].size_str++;
-        }
+        *(proc->buf_input + buf_pos_count) = '\0';
+        buf_pos_count += 2;
     }
 }
 
-/**
- * Macro for code generation of commands
- * @param[in] name Сommand name
- * @param[in] num Command number
- * @param[in] have_arg The presence of argument
- * @param[in] code The code this command should execute
-*/
-
-#define DEF_CMD(name, num, have_arg, code)                                                                                                                                                                          \
-    if (strncasecmp (data->cmd[id].command, name, strlen (name)) == 0)                                                                                                                                              \
-        {                                                                                                                                                                                                           \
-            if ((err = get_param (&data->cmd[id], name)) != 0)                                                                                                                                                      \
-            {                                                                                                                                                                                                       \
-                return err;                                                                                                                                                                                         \
-            }                                                                                                                                                                                                       \
-            if (have_arg)                                                                                                                                                                                           \
-            {                                                                                                                                                                                                       \
-                if (data->cmd[id].ram != VALUE_DEFAULT && data->cmd[id].reg != VALUE_DEFAULT)                                                                                                                       \
-                {                                                                                                                                                                                                   \
-                    fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num + HAVE_REG + HAVE_RAM, num + HAVE_REG + HAVE_RAM, data->cmd[id].argc, data->cmd[id].reg, data->cmd[id].ram);        \
-                    buf[counter++] = num + HAVE_RAM + HAVE_REG;                                                                                                                                                     \
-                    buf[counter++] = data->cmd[id].reg;                                                                                                                                                             \
-                }                                                                                                                                                                                                   \
-                else if (data->cmd[id].ram != VALUE_DEFAULT)                                                                                                                                                        \
-                {                                                                                                                                                                                                   \
-                    fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num + HAVE_ARG + HAVE_RAM, num + HAVE_ARG + HAVE_RAM, data->cmd[id].argc, data->cmd[id].reg, data->cmd[id].ram);        \
-                    buf[counter++] = num + HAVE_RAM + HAVE_ARG;                                                                                                                                                     \
-                    buf[counter++] = data->cmd[id].argc;                                                                                                                                                            \
-                }                                                                                                                                                                                                   \
-                else if (data->cmd[id].reg != VALUE_DEFAULT)                                                                                                                                                        \
-                {                                                                                                                                                                                                   \
-                    fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num + HAVE_REG, num + HAVE_REG, data->cmd[id].argc, data->cmd[id].reg, data->cmd[id].ram);                              \
-                    buf[counter++] = num + HAVE_REG;                                                                                                                                                                \
-                    buf[counter++] = data->cmd[id].reg;                                                                                                                                                             \
-                }                                                                                                                                                                                                   \
-                else                                                                                                                                                                                                \
-                {                                                                                                                                                                                                   \
-                    fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num + HAVE_ARG, num + HAVE_ARG, data->cmd[id].argc, data->cmd[id].reg, data->cmd[id].ram);                              \
-                    buf[counter++] = num + HAVE_ARG;                                                                                                                                                                \
-                    buf[counter++] = data->cmd[id].argc;                                                                                                                                                            \
-                }                                                                                                                                                                                                   \
-            }                                                                                                                                                                                                       \
-            else                                                                                                                                                                                                    \
-            {                                                                                                                                                                                                       \
-                buf[counter++] = num;                                                                                                                                                                               \
-                fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num, num, data->cmd[id].argc, data->cmd[id].reg, data->cmd[id].ram);                                                        \
-            }                                                                                                                                                                                                       \
-        }                                                                                                                                                                                                           \
+#define DEF_CMD(name, num, have_arg, ...)                                               \
+    if (strncasecmp (proc->cmd[ip].command, name, sizeof (name) - 1) == 0)              \
+    {                                                                                   \
+        proc->cmd[ip].cmd_code = num;                                                   \
+        if (have_arg)                                                                   \
+        {                                                                               \
+            CHECK_ERROR (param_check (&proc->cmd[ip], &proc->label, sizeof (name) - 1)) \
+        }                                                                               \
+        *(proc->cmd[ip].command + sizeof (name) - 1) = '\0';                            \
+    }                                                                                   \
     else
 
-/**
- * Macro for code generation of commands like jump
- * @param[in] name Сommand name
- * @param[in] num Command number
- * @param[in] code The code this command should execute
-*/
+int compare_command (SPU *proc)
+{    
+    my_assert (proc != NULL);
 
-#define DEF_JUMP_CMD(name, num, code)                                                                                                                                                                               \
-    if (strncasecmp (data->cmd[id].command, name, strlen (name)) == 0)                                                                                                                                              \
-    {                                                                                                                                                                                                               \
-        buf[counter++] = num + HAVE_ARG;                                                                                                                                                                            \
-        if (sscanf (data->cmd[id].command + strlen (name) + 1, "%d", &value) == 1)                                                                                                                                  \
-        {                                                                                                                                                                                                           \
-            buf[counter++] = value;                                                                                                                                                                                 \
-            fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num + HAVE_ARG, num + HAVE_ARG, value, data->cmd[id].reg, data->cmd[id].ram);                                                   \
-        }                                                                                                                                                                                                           \
-        else                                                                                                                                                                                                        \
-        {                                                                                                                                                                                                           \
-            for (size_t label_pos = 0; label_pos < LABEL_CNT; label_pos++)                                                                                                                                          \
-            {                                                                                                                                                                                                       \
-                if (strncasecmp (data->label[label_pos].name_label, data->cmd[id].command + strlen (name) + 1, strlen (data->label[label_pos].name_label)) == 0)                                                    \
-                {                                                                                                                                                                                                   \
-                    buf[counter++] = data->label[label_pos].label_n_str;                                                                                                                                            \
-                        fprintf (data->fp_print_txt, "|%12s|%12d|%12x|%12d|%12d|%12d|\n", name, num + HAVE_ARG, num + HAVE_ARG, data->label[label_pos].label_n_str, data->cmd[id].reg, data->cmd[id].ram);          \
-                    err = ERR_NO;                                                                                                                                                                                   \
-                    break;                                                                                                                                                                                          \
-                }                                                                                                                                                                                                   \
-                else                                                                                                                                                                                                \
-                {                                                                                                                                                                                                   \
-                    err = ERR_LABEL;                                                                                                                                                                                \
-                }                                                                                                                                                                                                   \
-            }                                                                                                                                                                                                       \
-        }                                                                                                                                                                                                           \
-        if (err == ERR_LABEL)                                                                                                                                                                                       \
-        {                                                                                                                                                                                                           \
-            return ERR_LABEL;                                                                                                                                                                                       \
-        }                                                                                                                                                                                                           \
-    }                                                                                                                                                                                                               \
-    else                                                                                                                                                                                                            \
+    proc->label = (LABELS *) calloc (LABEL_CNT, sizeof (LABELS));
+    my_assert (proc->label != NULL);
 
-/**
- * A function that outputs machine code to a new file.
- * @param[in] data Structure containing all information
- * @param[out] code_error Returns the error code
-*/
+    size_t label_count = 0;
 
-int print_text (TEXT *data)
-{
-    my_assert (data != NULL);
-
-    int counter = 0;
-    int label_count = 0;
-    int value = 0;
-
-    data->label = (LABELS *) calloc (LABEL_CNT, sizeof (LABELS));
-    my_assert (data->label != NULL);
-
-    for (size_t id = 0; id < data->n_cmd; id++)
+    for (size_t ip = 0; ip < proc->n_cmd; ip++)
     {
-        if (*data->cmd[id].command == ':')
+        if (label_count < LABEL_CNT)
         {
-            if (label_count >= LABEL_CNT)
+            if (*(proc->cmd[ip].command + proc->cmd[ip].size_str - 1) == ':')
             {
-                return ERR_LABEL;
+                proc->label[label_count].name_label  = proc->cmd[ip].command;
+                proc->label[label_count].label_n_str = ip - label_count;
+                label_count++;
             }
-            data->label[label_count].name_label = data->cmd[id].command + 1;
-            data->label[label_count].label_n_str = id + 1 - (++label_count);
         }
     }
 
-    data->n_words -= label_count;
+    proc->n_words -= label_count;
 
-    int *buf = NULL;
-    buf = (int *) calloc (data->n_words, sizeof (int));
+    proc->fp_print_txt = fopen (proc->file_name_print_txt, "w");
+
+    if (proc->fp_print_txt == NULL)
+    {
+        return ERR_FOPEN;
+    }
+
+    fprintf (proc->fp_print_txt, "+------------+------------+------------+------------+------------+\n");
+    fprintf (proc->fp_print_txt, "|  NAME_CMD  |  HEX_SPEAK |  VALUE_ARG |  VALUE_REG |  VALUE_RAM |\n");
+    fprintf (proc->fp_print_txt, "+------------+------------+------------+------------+------------+\n");
+
+    int *buf = (int *) calloc (sizeof (int), proc->n_words);
     my_assert (buf != NULL);
 
-    fprintf (data->fp_print_txt, "+------------+------------+------------+------------+------------+------------+\n");
-    fprintf (data->fp_print_txt, "|  NAME_CMD  |  CODE_CMD  |  HEX_SPEAK |  VALUE_ARG |  VALUE_REG |  VALUE_RAM |\n");
-    fprintf (data->fp_print_txt, "+------------+------------+------------+------------+------------+------------+\n");
+    int counter = 0;
 
-    for (size_t id = 0; id < data->n_cmd; id++)
+    for (size_t ip = 0; ip < proc->n_cmd; ip++)
     {
-        int err = ERR_NO;
-
         #include "..\include\commands.h"
         #include "..\include\jump_cmd.h"
 
-        if (*data->cmd[id].command != ':')
+        if (*(proc->cmd[ip].command + proc->cmd[ip].size_str - 1) != ':')
         {
-            err = ERR_COMMAND;
+            return ERR_COMMAND;
         }
 
-        if (err != ERR_NO)
+        if (*(proc->cmd[ip].command + proc->cmd[ip].size_str - 1) != ':')
         {
-            return err;
-        }
-        if (id == (data->n_cmd - 1) && *data->cmd[id].command != ':')
-        {
-            fprintf (data->fp_print_txt, "+------------+------------+------------+------------+------------+------------+");
-        }
-        else if (*data->cmd[id].command != ':')
-        {
-            fprintf (data->fp_print_txt, "+------------+------------+------------+------------+------------+------------+\n");
+            fprintf (proc->fp_print_txt, "|%12s|%12x|%12d|%12d|%12d|\n", proc->cmd[ip].command, proc->cmd[ip].cmd_code, proc->cmd[ip].argc, proc->cmd[ip].reg, proc->cmd[ip].ram);
+
+            fprintf (proc->fp_print_txt, "+------------+------------+------------+------------+------------+\n");
+
+            buf[counter++] = proc->cmd[ip].cmd_code;
+
+            if (proc->cmd[ip].cmd_code & HAVE_REG)
+            {
+                buf[counter++] = proc->cmd[ip].reg;
+            }
+            else if (proc->cmd[ip].cmd_code & HAVE_ARG)
+            {
+                buf[counter++] = proc->cmd[ip].argc;
+            }
         }
     }
 
-    fwrite (buf, sizeof (int), data->n_words, data->fp_print_bin);
+    if (fclose (proc->fp_print_txt) != 0)
+    {
+        return ERR_FCLOSE;
+    }
 
-    free (buf);
+    proc->fp_print_bin = fopen (proc->file_name_print_bin, "w + b");
+
+    if (proc->fp_print_bin == NULL)
+    {
+        return ERR_FOPEN;
+    }
+
+    fwrite (buf, sizeof (int), proc->n_words, proc->fp_print_bin);
+
+    if (fclose (proc->fp_print_bin) != 0)
+    {
+        return ERR_FCLOSE;
+    }
+
+    free(buf);
     buf = NULL;
 
     return ERR_NO;
@@ -265,70 +183,72 @@ int print_text (TEXT *data)
 
 #undef DEF_CMD
 
-#undef DEF_JUMP_CMD
-
-/**
- * Argument checking macro
- * @param[in] len Takes the length value after the command, before the argument
-*/
-
-#define DEF_GET_PARAM(len)                                                                                                                                                                                  \
-    if (isdigit (*(cmd->command + cmd_len + len)))                                                                                                                                                          \
-    {                                                                                                                                                                                                       \
-        for (size_t ip = 0; ip < cmd->size_str - cmd_len - 2 - len; ip++)                                                                                                                                   \
-        {                                                                                                                                                                                                   \
-            if (!isdigit (*(cmd->command + cmd_len + len + ip)))                                                                                                                                            \
-            {                                                                                                                                                                                               \
-                return ERR_ARGC;                                                                                                                                                                            \
-            }                                                                                                                                                                                               \
-        }                                                                                                                                                                                                   \
-        cmd->argc = atoi (cmd->command + cmd_len + len);                                                                                                                                                    \
-    }                                                                                                                                                                                                       \
-    else if ((*(cmd->command + cmd_len + len) == 'r' && *(cmd->command + cmd_len + 2 + len) == 'x') || (*(cmd->command + cmd_len + len) == 'R' && *(cmd->command + cmd_len + 2 + len) == 'X'))              \
-    {                                                                                                                                                                                                       \
-        if (*(cmd->command + cmd_len + 1 + len) >= 'a' && *(cmd->command + cmd_len + 1 + len) <= 'd')                                                                                                       \
-        {                                                                                                                                                                                                   \
-            cmd->reg = *(cmd->command + cmd_len + 1 + len) - 'a' + 1;                                                                                                                                       \
-        }                                                                                                                                                                                                   \
-        else if (*(cmd->command + cmd_len + 1 + len) >= 'A' && *(cmd->command + cmd_len + 1 + len) <= 'D')                                                                                                  \
-        {                                                                                                                                                                                                   \
-            cmd->reg = *(cmd->command + cmd_len + 1 + len) - 'A' + 1;                                                                                                                                       \
-        }                                                                                                                                                                                                   \
-        else                                                                                                                                                                                                \
-        {                                                                                                                                                                                                   \
-            return ERR_REG;                                                                                                                                                                                 \
-        }                                                                                                                                                                                                   \
-    }                                                                                                                                                                                                       \
-    else
-
-/**
- * A function that detects whether a command has an argument or not.
- * @param[in] cmd A structure containing all information about the command line
- * @param[in] cmd_str A string containing the command name
- * @param[out] code_error Returns the error code
-*/
-
-int get_param (COMMANDS *cmd, char *cmd_str)
+int param_check (COMMANDS *cmd, LABELS **label, int cmd_len)
 {
-    size_t cmd_len = strlen (cmd_str);
-
-    DEF_GET_PARAM (1)
-    if (*(cmd->command + cmd_len + 1) == '[' && *(cmd->command + cmd->size_str - 2) == ']')
-    {   
-        DEF_GET_PARAM (2)
-        
-        {
-            return ERR_REG;
-        }
+    if (*(cmd->command + cmd_len + 1) == '[' && *(cmd->command + cmd->size_str - 1) == ']')
+    {
+        CHECK_ERROR (get_param (cmd, label, cmd_len, 2))
 
         cmd->ram = 1;
+
+        cmd->cmd_code |= HAVE_RAM;
     }
-    else if (cmd_len == (cmd->size_str + 1))
+    else
     {
-        return ERR_COMMAND;
+        CHECK_ERROR (get_param (cmd, label, cmd_len, 1))
     }
 
     return ERR_NO;
 }
 
-#undef DEF_GET_PARAM
+int get_param (COMMANDS *cmd, LABELS **label, int cmd_len, int len)
+{
+    if (isdigit (*(cmd->command + cmd_len + len)))
+    {
+        for (size_t ip = 0; ip < cmd->size_str - cmd_len - len - 1; ip++)
+        {
+            if (isdigit (*(cmd->command + cmd_len + len + ip)) == 0)
+            {
+                return ERR_ARGC;
+            }
+        }
+
+        cmd->argc = atoi (cmd->command + cmd_len + len);
+
+        cmd->cmd_code |= HAVE_ARG;
+    }
+    else if (toupper (*(cmd->command + cmd_len + len)) == 'R' && toupper (*(cmd->command + cmd_len + len + 2)) == 'X')
+    {
+        if (toupper (*(cmd->command + cmd_len + len + 1)) >= 'A' || toupper (*(cmd->command + cmd_len + len + 1)) <= 'D')
+        {
+            cmd->reg = toupper(*(cmd->command + cmd_len + len + 1)) - 'A' + 1;
+            cmd->cmd_code |= HAVE_REG;
+        }
+        else
+        {
+            return ERR_REG;
+        }
+    }
+    else
+    {
+        for (size_t ip = 0; ip < LABEL_CNT; ip++)
+        {
+            if (label[ip] != NULL)
+            {
+                if (strncasecmp (cmd->command + cmd_len + len, label[ip]->name_label, sizeof (label[ip]->name_label) - 2) == 0)
+                {
+                    cmd->argc = label[ip]->label_n_str;
+                    cmd->cmd_code |= HAVE_ARG;
+                    
+                    return ERR_NO;
+                }
+            }
+            else
+            {
+                return ERR_LABEL;
+            }
+        }
+    }
+
+    return ERR_NO;
+}
