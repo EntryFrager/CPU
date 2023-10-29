@@ -4,9 +4,9 @@
  * The hlt command that stops the program.
 */
 
-DEF_CMD ("hlt", HLT, false,
+DEF_CMD("hlt", HLT, false,
     {
-        fprintf (data->fp_print, "Расчёт окончен.");
+        fprintf (spu->fp_print, "Расчёт окончен.");
         return ERR_NO;
     })
 
@@ -14,46 +14,47 @@ DEF_CMD ("hlt", HLT, false,
  * The command that prints the response.
 */
 
-DEF_CMD ("out", OUT, false,
+DEF_CMD("out", OUT, false,
     {
-        fprintf (data->fp_print, "Ответ: %llf\n", stack->data[stack->position - 1]);
+        fprintf (spu->fp_print, "Ответ: %lf\n", spu->stack.data[spu->stack.position - 1]);
     })
 
 /**
  * Command that adds an element to memory (stack).
 */
 
-DEF_CMD ("push", PUSH, true,
+DEF_CMD("push", PUSH, true,
     {
-        if (data->cmd[id].ram != VALUE_DEFAULT && data->cmd[id].reg != VALUE_DEFAULT)
+        if (spu->cmd[ip].command & HAVE_RAM)
         {
-            if (REG_VALUE[data->cmd[id].reg - 1] > 99 || REG_VALUE[data->cmd[id].reg - 1] < 0)
+            if (spu->cmd[ip].command & HAVE_REG)
             {
-                return ERR_RAM;
+                if (spu->reg_value[spu->cmd[ip].reg - 1] > 99 || spu->reg_value[spu->cmd[ip].reg - 1] < 0)
+                {
+                    return ERR_RAM;
+                }
+
+                DEF_PUSH (&spu->stack, spu->ram_value[(size_t) spu->reg_value[spu->cmd[ip].reg - 1]]);
+
+                spu->ram_value[(size_t) spu->reg_value[spu->cmd[ip].reg - 1]] = 0;
             }
-
-            DEF_PUSH (stack, ram[REG_VALUE[data->cmd[id].reg - 1]]);
-
-            ram[REG_VALUE[data->cmd[id].reg - 1]] = 0;
-        }
-        else if (data->cmd[id].ram != VALUE_DEFAULT)
-        {
-            if (data->cmd[id].argc > 99 || data->cmd[id].argc < 0)
+            else
             {
-                return ERR_RAM;
+                if (spu->cmd[ip].argc > 99 || spu->cmd[ip].argc < 0)
+                {
+                    return ERR_RAM;
+                }
+
+                DEF_PUSH (&spu->stack, spu->ram_value[spu->cmd[ip].argc]);
             }
-
-            DEF_PUSH (stack, ram[data->cmd[id].argc]);
-
-            ram[data->cmd[id].argc] = 0;
         }
-        else if (data->cmd[id].reg != VALUE_DEFAULT)
+        else if (spu->cmd[ip].command & HAVE_REG)
         {
-            DEF_PUSH (stack, REG_VALUE[data->cmd[id].reg - 1]);
+            DEF_PUSH (&spu->stack, spu->reg_value[spu->cmd[ip].reg - 1]);
         }
-        else
+        else if (spu->cmd[ip].command & HAVE_ARG)
         {
-            DEF_PUSH (stack, data->cmd[id].argc);
+            DEF_PUSH (&spu->stack, spu->cmd[ip].argc);
         }
     })
 
@@ -61,29 +62,36 @@ DEF_CMD ("push", PUSH, true,
  * Command that removes an element from memory (stack).
 */
 
-DEF_CMD ("pop", POP, true,
+DEF_CMD("pop", POP, true,
     {
-        if (data->cmd[id].ram != VALUE_DEFAULT && data->cmd[id].reg != VALUE_DEFAULT)
+        if (spu->cmd[ip].command & HAVE_RAM)
         {
-            if (REG_VALUE[data->cmd[id].reg - 1] > 99 || REG_VALUE[data->cmd[id].reg - 1] < 0)
+            if (spu->cmd[ip].command & HAVE_REG)
             {
-                return ERR_RAM;
-            }
+                if (spu->reg_value[spu->cmd[ip].reg - 1] > 99 || spu->reg_value[spu->cmd[ip].reg - 1] < 0)
+                {
+                    return ERR_RAM;
+                }
 
-            ram[REG_VALUE[data->cmd[id].reg - 1]] = DEF_POP (stack);
+                spu->ram_value[(size_t) spu->reg_value[spu->cmd[ip].reg - 1]] = DEF_POP (&spu->stack);
+            }
+            else
+            {
+                if (spu->cmd[ip].argc > 99 || spu->cmd[ip].argc < 0)
+                {
+                    return ERR_RAM;
+                }
+
+                spu->ram_value[(size_t) spu->cmd[ip].argc] = DEF_POP (&spu->stack);
+            }
         }
-        else if (data->cmd[id].ram != VALUE_DEFAULT)
+        else if (spu->cmd[ip].command & HAVE_REG)
         {
-            if (data->cmd[id].argc > 99 || data->cmd[id].argc < 0)
-            {
-                return ERR_RAM;
-            }
-
-            ram[data->cmd[id].argc] = DEF_POP (stack);
+            spu->reg_value[spu->cmd[ip].reg - 1] = DEF_POP (&spu->stack);
         }
         else
         {
-            REG_VALUE[data->cmd[id].reg - 1] = DEF_POP (stack);
+            return ERR_ARGC;
         }
     })
 
@@ -91,88 +99,88 @@ DEF_CMD ("pop", POP, true,
  * Addition command.
 */
 
-DEF_CMD ("add", ADD, false,
+DEF_CMD("add", ADD, false,
     {
-        a = DEF_POP (stack);
-        b = DEF_POP (stack);
+        a = DEF_POP (&spu->stack);
+        b = DEF_POP (&spu->stack);
 
-        DEF_PUSH (stack, a + b);
+        DEF_PUSH (&spu->stack, a + b);
     })
 
 /**
  * Subtraction command.
 */
 
-DEF_CMD ("sub", SUB, false,
+DEF_CMD("sub", SUB, false,
     {
-        a = DEF_POP (stack);
-        b = DEF_POP (stack);
+        a = DEF_POP (&spu->stack);
+        b = DEF_POP (&spu->stack);
 
-        DEF_PUSH (stack, b - a);
+        DEF_PUSH (&spu->stack, b - a);
     })
 
 /**
  * Multiply command.
 */
 
-DEF_CMD ("mul", MUL, false,
+DEF_CMD("mul", MUL, false,
     {
-        a = DEF_POP (stack);
-        b = DEF_POP (stack);
+        a = DEF_POP (&spu->stack);
+        b = DEF_POP (&spu->stack);
 
-        DEF_PUSH (stack, a * b);
+        DEF_PUSH (&spu->stack, a * b);
     })
 
 /**
  * Division command.
 */
 
-DEF_CMD ("div", DIV, false,
+DEF_CMD("div", DIV, false,
     {
-        a = DEF_POP (stack);
-        b = DEF_POP (stack);
+        a = DEF_POP (&spu->stack);
+        b = DEF_POP (&spu->stack);
 
-        DEF_PUSH (stack, b / a);
+        DEF_PUSH (&spu->stack, b / a);
     })
 
 /**
  * Sine command.
 */
 
-DEF_CMD ("sin", SIN, false,
+DEF_CMD("sin", SIN, false,
     {
-        a = DEF_POP (stack);
+        a = DEF_POP (&spu->stack);
 
-        DEF_PUSH (stack, (ELEMENT) sin (a));
+        DEF_PUSH (&spu->stack, (ELEMENT) sin (a));
     })
 
 /**
  * Cosine command.
 */
 
-DEF_CMD ("cos", COS, false,
+DEF_CMD("cos", COS, false,
     {
-        a = DEF_POP (stack);
+        a = DEF_POP (&spu->stack);
 
-        DEF_PUSH (stack, (ELEMENT) cos (a));
+        DEF_PUSH (&spu->stack, (ELEMENT) cos (a));
     })
 
 /**
  * Root command.
 */
 
-DEF_CMD ("sqrt", SQRT, false,
+DEF_CMD("sqrt", SQRT, false,
     {
-        a = DEF_POP (stack);
+        a = DEF_POP (&spu->stack);
 
-        DEF_PUSH (stack, (ELEMENT) sqrt (a));
+        DEF_PUSH (&spu->stack, (ELEMENT) sqrt (a));
     })
 
 /**
  * A command that allows the user to enter a number using an input device.
 */
 
-DEF_CMD ("in", IN, false,
+DEF_CMD("in", IN, false,
     {
         ELEMENT value = 0;
 
@@ -181,15 +189,24 @@ DEF_CMD ("in", IN, false,
             return ERR_INPUT_ARG;
         }
 
-        DEF_PUSH (stack, (ELEMENT) value);
+        DEF_PUSH (&spu->stack, (ELEMENT) value);
     })
 
 /**
  * Return command to label call command.
 */
 
-DEF_CMD ("ret", RET, false,
+DEF_CMD("ret", RET, false,
     {
-        a = DEF_POP (&stack_call);
-        id = a;
+        a = DEF_POP (&spu->stack_call);
+        ip = (size_t) a;
+    })
+
+/**
+ * Command that starts graphics memory.
+*/
+
+DEF_CMD("draw", DRAW, false,
+    {
+        graph_video (spu->ram_value);
     })

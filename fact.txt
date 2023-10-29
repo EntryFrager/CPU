@@ -1,0 +1,32 @@
+in
+pop rdx
+push 0
+push rdx
+ja go
+hlt
+
+
+go:
+push 1
+pop rax
+push 1
+out
+CALL factorial
+return:
+hlt
+
+
+factorial:
+    push rax
+    push 1
+    add
+    pop rax
+    push rax
+    mul
+    out
+    push rdx
+    push rax
+    je return
+    pop rax
+    pop rdx
+    call factorial

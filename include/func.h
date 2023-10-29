@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #include "..\include\error.h"                                                               ///< Connects a file that displays errors.
+#include "..\include\stack.h"                                                               ///< Connects the file that stores the stack
 
 enum COMMANDS_CODE {                                                                        ///< All command codes.
     HLT,                                                                                    ///< The hlt command that stops the program.
@@ -32,6 +33,7 @@ enum COMMANDS_CODE {                                                            
     SIN,                                                                                    ///< Cosine command.
     COS,                                                                                    ///< Root command.
     IN,                                                                                     ///< A command that allows the user to enter a number using an input device.
+    DRAW,                                                                                   ///< Command that starts graphics memory.
 };
 
 const size_t COMMAND_CNT = 22;                                                              ///< Number of commands.
@@ -51,15 +53,17 @@ const size_t SIZE_RAM = 100;                                                    
 
 const int VALUE_DEFAULT = 0;                                                                ///< Default value of variables.
 
+const size_t STACK_DEFAULT_SIZE = 10;
+
 const int HAVE_RAM = 1 << 7;                                                                ///< Code for a command interacting with RAM.
 const int HAVE_REG = 1 << 6;                                                                ///< Code for a command that interacts with a register.
 const int HAVE_ARG = 1 << 5;                                                                ///< Code for the command that interacts with the argument.
 
 typedef struct {                                                                            ///< Structure containing information about commands.
     int command = VALUE_DEFAULT;                                                            ///< Command code.
-    int argc = VALUE_DEFAULT;                                                               ///< Argument value.
-    int reg = VALUE_DEFAULT;                                                                ///< Register value.
-    int ram = VALUE_DEFAULT;                                                                ///< 1 if RAM is in use, 0 if not.
+    int argc    = VALUE_DEFAULT;                                                            ///< Argument value.
+    int reg     = VALUE_DEFAULT;                                                            ///< Register value.
+    int ram     = VALUE_DEFAULT;                                                            ///< 1 if RAM is in use, 0 if not.
 } COMMANDS;
 
 typedef struct {                                                                            ///< Structure containing all the information necessary for the program to work.
@@ -74,17 +78,23 @@ typedef struct {                                                                
     size_t size_file = VALUE_DEFAULT;                                                       ///< File size.
     size_t n_cmd = VALUE_DEFAULT;                                                           ///< Number of commands.
 
+    ELEMENT *reg_value = NULL;                                                              ///< Array containing register values.
+    ELEMENT *ram_value = NULL;
+
+    STACK stack      = {};
+    STACK stack_call = {};
+
     COMMANDS *cmd = NULL;                                                                   ///< An array of structures storing information about commands.
-} TEXT;
+} SPU;
 
-int input_text (TEXT *data);                                                                ///< A function that reads text from a file into a buffer.
+int input_text (SPU *spu);                                                                  ///< A function that reads text from a file into a buffer.
 
-int split_commands (TEXT *data);                                                            ///< A function that divides buffer text into separate commands.
+int split_commands (SPU *spu);                                                              ///< A function that divides buffer text into separate commands.
 
 size_t number_of_commands (const int *data, const size_t size);                             ///< Function that counts the number of commands.
 
 size_t get_file_size (FILE *stream);                                                        ///< Function returning file size.
 
-void text_free (TEXT *data);                                                                ///< Function that clears all variables.
+void spu_dtor (SPU *spu);                                                                   ///< Function that clears all variables.
 
 #endif //FUNC_H

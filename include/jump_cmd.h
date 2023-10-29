@@ -1,92 +1,80 @@
 /// @file jump_cmd.h
 
+#define jump_condition(expr)                                                                            \
+    if (spu->stack.data[spu->stack.position - 1] expr spu->stack.data[spu->stack.position - 2])         \
+    {                                                                                                   \
+        ip = (size_t) spu->cmd[ip].argc - 1;                                                            \
+    }
+
 /**
  * Call command that preserves the previous position.
 */
 
-DEF_JUMP_CMD ("call", CALL,
+DEF_CMD("call", CALL, 1,
     {
-        DEF_PUSH (&stack_call, id);
-        id = data->cmd[id].argc - 1;
+        DEF_PUSH (&spu->stack_call, ip);
+        ip = (size_t) spu->cmd[ip].argc - 1;
     })
 
 /**
  * Unconditional jump command.
 */
 
-DEF_JUMP_CMD ("jmp", JMP,
+DEF_CMD("jmp", JMP, 1,
     {
-        id = data->cmd[id].argc - 1;
+        ip =  (size_t) spu->cmd[ip].argc - 1;
     })
 
 /**
  * Jump command if the last number written to the stack is greater than the second to last number written to the stack.
 */
 
-DEF_JUMP_CMD ("ja", JA,
+DEF_CMD("ja", JA, 1,
     {
-        if (stack->data[stack->position - 1] > stack->data[stack->position - 2])
-        {
-            id = data->cmd[id].argc - 1;
-        }
+        jump_condition (>);
     })
 
 /**
  * Jump command if the last number written to the stack is greater than or equal to the second to last number written to the stack.
 */
 
-DEF_JUMP_CMD ("jae", JAE,
+DEF_CMD("jae", JAE, 1,
     {
-        if (stack->data[stack->position - 1] >= stack->data[stack->position - 2])
-        {
-            id = data->cmd[id].argc - 1;
-        }
+        jump_condition (>=);
     })
 
 /**
  * Jump command if the last number written to the stack is less than the second to last number written to the stack.
 */
 
-DEF_JUMP_CMD ("jb", JB,
+DEF_CMD("jb", JB, 1,
     {
-        if (stack->data[stack->position - 1] < stack->data[stack->position - 2])
-        {
-            id = data->cmd[id].argc - 1;
-        }
+        jump_condition (<);
     })
 
 /**
  * Jump command if the last number written to the stack is less than or equal to the second to last number written to the stack.
 */
 
-DEF_JUMP_CMD ("jbe", JBE,
+DEF_CMD("jbe", JBE, 1,
     {
-        if (stack->data[stack->position - 1] <= stack->data[stack->position - 2])
-        {
-            id = data->cmd[id].argc - 1;
-        }
+        jump_condition (<=);
     })
 
 /**
  * Jump command if the last number written to the stack is equal to the second to last number written to the stack.
 */
 
-DEF_JUMP_CMD ("je", JE,
+DEF_CMD("je", JE, 1,
     {
-        if (stack->data[stack->position - 1] == stack->data[stack->position - 2])
-        {
-            id = data->cmd[id].argc - 1;
-        }
+        jump_condition (==);
     })
 
 /**
  * Jump command if the last number written to the stack is not equal to the second to last number written to the stack.
 */
 
-DEF_JUMP_CMD ("jne", JNE,
+DEF_CMD("jne", JNE, 1,
     {
-        if (stack->data[stack->position - 1] != stack->data[stack->position - 2])
-        {
-            id = data->cmd[id].argc - 1;
-        }
+        jump_condition (!=);
     })

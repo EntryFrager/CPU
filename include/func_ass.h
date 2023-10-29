@@ -33,6 +33,7 @@ enum COMMANDS_CODE {                                                            
     SIN,                                                                                        ///< Cosine command.
     COS,                                                                                        ///< Root command.
     IN,                                                                                         ///< A command that allows the user to enter a number using an input device.
+    DRAW,                                                                                       ///< Command that starts graphics memory.
 };
 
 const size_t COMMAND_CNT = 22;                                                                  ///< Number of commands.
@@ -57,11 +58,13 @@ const int VALUE_DEFAULT = 0;                                                    
 typedef struct {                                                                                ///< Structure containing information about labels.
     int label_n_str = VALUE_DEFAULT;                                                            ///< Line number with label.
     char *name_label = NULL;                                                                    ///< Label name.
+    int size_label = VALUE_DEFAULT;
 } LABELS;
 
 typedef struct {                                                                                ///< Structure containing information about commands.
     size_t size_str = VALUE_DEFAULT;                                                            ///< Command line size.
     char *command = NULL;                                                                       ///< Command line.
+    int cmd_code = 0;
     int argc = VALUE_DEFAULT;                                                                   ///< Argument value.
     int reg = VALUE_DEFAULT;                                                                    ///< Register value.
     int ram = VALUE_DEFAULT;                                                                    ///< 1 if RAM is in use, 0 if not.
@@ -76,20 +79,20 @@ typedef struct {                                                                
     FILE *fp_print_txt = NULL;                                                                  ///< Pointer to output file of type txt.
     FILE *fp_print_bin = NULL;                                                                  ///< Pointer to output file of type bin.
 
-    char *buf = NULL;                                                                           ///< A buffer containing all the information read from the file.
+    char *buf_input = NULL;                                                                     ///< A buffer containing all the information read from the file.
 
     size_t size_file = VALUE_DEFAULT;                                                           ///< File size.
     size_t n_cmd = VALUE_DEFAULT;                                                               ///< Number of commands.
-    size_t n_words = VALUE_DEFAULT;                                                             ///< Word count.
+    size_t n_words= VALUE_DEFAULT;                                                              ///< Word count.
 
     COMMANDS *cmd = NULL;                                                                       ///< An array of structures storing information about commands.
     LABELS *label = NULL;                                                                       ///< An array of structures storing information about labels.
-} TEXT;
+} SPU;
 
-void number_of_commands (TEXT *data);                                                           ///< Function that counts the number of commands.
+void number_of_commands (SPU *spu);                                                             ///< Function that counts the number of commands.
 
 size_t get_file_size (FILE *stream);                                                            ///< Function returning file size.
 
-void text_free (TEXT *data);                                                                    ///< Function that clears all variables.
+void spu_dtor (SPU *spu);                                                                       ///< Function that clears all variables.
 
 #endif //FUNC_H

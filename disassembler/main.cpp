@@ -8,9 +8,9 @@
 
 int main ()
 {
-    TEXT data = {};
+    SPU spu = {};
 
-    int code_error = input_text (&data);
+    int code_error = input_text (&spu);
 
     if (code_error != 0)
     {
@@ -19,20 +19,20 @@ int main ()
         return 0;
     }
 
-    data.file_name_print = "..\\ass_input.txt";
+    spu.file_name_print = "..\\ass_input.txt";
 
-    data.fp_print = fopen (data.file_name_print, "w");
+    spu.fp_print = fopen (spu.file_name_print, "w");
 
-    if (data.fp_print == NULL)
+    if (spu.fp_print == NULL)
     {
         fprintf (stderr, "%s", my_strerr (ERR_FOPEN));
         
         return 0;
     }
 
-    print_text (&data);
+    print_text (&spu);
 
-    if (fclose (data.fp_print) != 0)
+    if (fclose (spu.fp_print) != 0)
     {
         fprintf (stderr, "%s", my_strerr (ERR_FCLOSE));
         

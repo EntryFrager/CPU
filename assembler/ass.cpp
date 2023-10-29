@@ -6,176 +6,239 @@
 
 /**
  * A function that reads text from a file into one buffer.
- * @param[in] proc Structure containing all information
+ * @param[in] spu Structure containing all information
  * @param[out] code_error Returns the error code
 */
 
-int input_text (SPU *proc)
+int input_text (SPU *spu)
 {
-    my_assert (proc != NULL);
+    my_assert (spu != NULL);
 
-    proc->fp_input = fopen (proc->file_name_input, "r + b");
+    spu->fp_input = fopen (spu->file_name_input, "r + b");
 
-    if (proc->fp_input == NULL)
+    if (spu->fp_input == NULL)
     {
         return ERR_FOPEN;
     }
 
-    proc->size_file = get_file_size (proc->fp_input);
+    spu->size_file = get_file_size (spu->fp_input);
 
-    proc->buf_input = (char *) calloc (proc->size_file + 1, sizeof (char));
-    my_assert (proc->buf_input != NULL);
+    spu->buf_input = (char *) calloc (spu->size_file + 1, sizeof (char));
+    my_assert (spu->buf_input != NULL);
 
-    size_t read_size = fread (proc->buf_input, sizeof (char), proc->size_file, proc->fp_input);
+    size_t read_size = fread (spu->buf_input, sizeof (char), spu->size_file, spu->fp_input);
 
-    if (read_size != proc->size_file)
+    if (read_size != spu->size_file)
     {
         return ERR_FREAD;
     }
 
-    *(proc->buf_input + proc->size_file) = '\0';
+    *(spu->buf_input + spu->size_file) = '\0';
 
-    if (fclose (proc->fp_input) != 0)
+    if (fclose (spu->fp_input) != 0)
     {
         return ERR_FCLOSE;
     }
 
-    split_commands (proc);
+    split_commands (spu);
+
+    clean_comment (spu);
 
     return ERR_NO;
 }
 
-void split_commands (SPU *proc)
+/**
+ * Function that splits a buffer into lines.
+ * @param[in] spu Structure containing all information
+*/
+
+void split_commands (SPU *spu)
 {
-    my_assert (proc != NULL);
+    my_assert (spu != NULL);
 
-    number_of_commands (proc);
+    number_of_commands (spu);
 
-    proc->cmd = (COMMANDS *) calloc (proc->n_cmd, sizeof (COMMANDS));
+    spu->cmd = (COMMANDS *) calloc (spu->n_cmd, sizeof (COMMANDS));
+    my_assert (spu->cmd != NULL);
 
     size_t buf_pos_count = 0;
 
-    for (size_t ip = 0; ip < proc->n_cmd; ip++)
+    for (size_t ip = 0; ip < spu->n_cmd; ip++)
     {
-        while (isspace (*(proc->buf_input + buf_pos_count)) != 0 && buf_pos_count < proc->size_file)
+        while (isspace (*(spu->buf_input + buf_pos_count)) != 0 && buf_pos_count < spu->size_file)
         {
             buf_pos_count++;
         }
 
-        proc->cmd[ip].command = proc->buf_input + buf_pos_count;
+        spu->cmd[ip].command = spu->buf_input + buf_pos_count;
 
-        while (*(proc->buf_input + buf_pos_count) != '\r' && buf_pos_count < proc->size_file)
+        while (*(spu->buf_input + buf_pos_count) != '\r' && buf_pos_count < spu->size_file)
         {
             buf_pos_count++;
-            proc->cmd[ip].size_str++;
+            spu->cmd[ip].size_str++;
         }
 
-        *(proc->buf_input + buf_pos_count) = '\0';
+        *(spu->buf_input + buf_pos_count) = '\0';
         buf_pos_count += 2;
     }
 }
 
+/**
+ * Function that removes comments.
+ * @param[in] spu Structure containing all information
+*/
+
+void clean_comment (SPU *spu)
+{
+    my_assert (spu != NULL);
+    
+    for (size_t ip = 0; ip < spu->n_cmd; ip++)
+    {
+        int pos = 0;
+        int space_count = 0;
+
+        while (*(spu->cmd[ip].command + pos) != '\0')
+        {
+            if (*(spu->cmd[ip].command + pos) == ';')
+            {
+                *(spu->cmd[ip].command + pos) = '\0';
+                spu->cmd[ip].size_str = pos;
+                break;
+            }
+            else
+            {
+                pos++;
+            }
+            
+            space_count = 0;
+
+            while (isspace (*(spu->cmd[ip].command + pos)) != 0)
+            {
+                space_count++;
+                pos++;
+            }
+        }
+
+        spu->cmd[ip].size_str -= space_count;
+
+        *(spu->cmd[ip].command + spu->cmd[ip].size_str) = '\0';
+    }
+}
+
 #define DEF_CMD(name, num, have_arg, ...)                                               \
-    if (strncasecmp (proc->cmd[ip].command, name, sizeof (name) - 1) == 0)              \
+    if (strncasecmp (spu->cmd[ip].command, name, sizeof (name) - 1) == 0)               \
     {                                                                                   \
-        proc->cmd[ip].cmd_code = num;                                                   \
+        spu->cmd[ip].cmd_code = num;                                                    \
         if (have_arg)                                                                   \
         {                                                                               \
-            CHECK_ERROR (param_check (&proc->cmd[ip], &proc->label, sizeof (name) - 1)) \
+            CHECK_ERROR (param_check (&spu->cmd[ip], spu->label, sizeof (name) - 1))    \
         }                                                                               \
-        *(proc->cmd[ip].command + sizeof (name) - 1) = '\0';                            \
+        *(spu->cmd[ip].command + sizeof (name) - 1) = '\0';                             \
     }                                                                                   \
     else
 
-int compare_command (SPU *proc)
-{    
-    my_assert (proc != NULL);
+/**
+ * A function that compiles user code into machine code and outputs it to a file.
+ * @param[in] spu Structure containing all information
+ * @param[out] code_error Returns the error code
+*/
 
-    proc->label = (LABELS *) calloc (LABEL_CNT, sizeof (LABELS));
-    my_assert (proc->label != NULL);
+int compare_command (SPU *spu)
+{    
+    my_assert (spu != NULL);
+
+    spu->label = (LABELS *) calloc (LABEL_CNT, sizeof (LABELS));
+    my_assert (spu->label != NULL);
 
     size_t label_count = 0;
 
-    for (size_t ip = 0; ip < proc->n_cmd; ip++)
+    for (size_t ip = 0; ip < spu->n_cmd; ip++)
     {
         if (label_count < LABEL_CNT)
         {
-            if (*(proc->cmd[ip].command + proc->cmd[ip].size_str - 1) == ':')
+            if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) == ':')
             {
-                proc->label[label_count].name_label  = proc->cmd[ip].command;
-                proc->label[label_count].label_n_str = ip - label_count;
+                spu->label[label_count].name_label  = spu->cmd[ip].command;
+                spu->label[label_count].label_n_str = ip - label_count;
+                spu->label[label_count].size_label  = spu->cmd[ip].size_str - 1;
                 label_count++;
             }
         }
+        else
+        {
+            return ERR_LABEL;
+        }
     }
 
-    proc->n_words -= label_count;
+    spu->n_words -= label_count;
 
-    proc->fp_print_txt = fopen (proc->file_name_print_txt, "w");
+    spu->fp_print_txt = fopen (spu->file_name_print_txt, "w");
 
-    if (proc->fp_print_txt == NULL)
+    if (spu->fp_print_txt == NULL)
     {
         return ERR_FOPEN;
     }
 
-    fprintf (proc->fp_print_txt, "+------------+------------+------------+------------+------------+\n");
-    fprintf (proc->fp_print_txt, "|  NAME_CMD  |  HEX_SPEAK |  VALUE_ARG |  VALUE_REG |  VALUE_RAM |\n");
-    fprintf (proc->fp_print_txt, "+------------+------------+------------+------------+------------+\n");
+    fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+------------+\n");
+    fprintf (spu->fp_print_txt, "|  NAME_CMD  |  HEX_SPEAK |  VALUE_ARG |  VALUE_REG |  VALUE_RAM |\n");
+    fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+------------+\n");
 
-    int *buf = (int *) calloc (sizeof (int), proc->n_words);
+    int *buf = (int *) calloc (sizeof (int), spu->n_words);
     my_assert (buf != NULL);
 
     int counter = 0;
 
-    for (size_t ip = 0; ip < proc->n_cmd; ip++)
+    for (size_t ip = 0; ip < spu->n_cmd; ip++)
     {
-        #include "..\include\commands.h"
-        #include "..\include\jump_cmd.h"
-
-        if (*(proc->cmd[ip].command + proc->cmd[ip].size_str - 1) != ':')
+        if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) != ':')
         {
-            return ERR_COMMAND;
+            #include "..\include\commands.h"
+            #include "..\include\jump_cmd.h"
+
+            {
+                return ERR_COMMAND;
+            }
         }
 
-        if (*(proc->cmd[ip].command + proc->cmd[ip].size_str - 1) != ':')
+        if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) != ':')
         {
-            fprintf (proc->fp_print_txt, "|%12s|%12x|%12d|%12d|%12d|\n", proc->cmd[ip].command, proc->cmd[ip].cmd_code, proc->cmd[ip].argc, proc->cmd[ip].reg, proc->cmd[ip].ram);
+            fprintf (spu->fp_print_txt, "|%12s|%12x|%12d|%12d|%12d|\n", spu->cmd[ip].command, spu->cmd[ip].cmd_code, spu->cmd[ip].argc, spu->cmd[ip].reg, spu->cmd[ip].ram);
 
-            fprintf (proc->fp_print_txt, "+------------+------------+------------+------------+------------+\n");
+            fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+------------+\n");
 
-            buf[counter++] = proc->cmd[ip].cmd_code;
+            buf[counter++] = spu->cmd[ip].cmd_code;
 
-            if (proc->cmd[ip].cmd_code & HAVE_REG)
+            if (spu->cmd[ip].cmd_code & HAVE_REG)
             {
-                buf[counter++] = proc->cmd[ip].reg;
+                buf[counter++] = spu->cmd[ip].reg;
             }
-            else if (proc->cmd[ip].cmd_code & HAVE_ARG)
+            else if (spu->cmd[ip].cmd_code & HAVE_ARG)
             {
-                buf[counter++] = proc->cmd[ip].argc;
+                buf[counter++] = spu->cmd[ip].argc;
             }
         }
     }
 
-    if (fclose (proc->fp_print_txt) != 0)
+    if (fclose (spu->fp_print_txt) != 0)
     {
         return ERR_FCLOSE;
     }
 
-    proc->fp_print_bin = fopen (proc->file_name_print_bin, "w + b");
+    spu->fp_print_bin = fopen (spu->file_name_print_bin, "w + b");
 
-    if (proc->fp_print_bin == NULL)
+    if (spu->fp_print_bin == NULL)
     {
         return ERR_FOPEN;
     }
 
-    fwrite (buf, sizeof (int), proc->n_words, proc->fp_print_bin);
+    fwrite (buf, sizeof (int), spu->n_words, spu->fp_print_bin);
 
-    if (fclose (proc->fp_print_bin) != 0)
+    if (fclose (spu->fp_print_bin) != 0)
     {
         return ERR_FCLOSE;
     }
 
-    free(buf);
+    free (buf);
     buf = NULL;
 
     return ERR_NO;
@@ -183,8 +246,17 @@ int compare_command (SPU *proc)
 
 #undef DEF_CMD
 
-int param_check (COMMANDS *cmd, LABELS **label, int cmd_len)
+/**
+ * A function that checks whether a command has a parameter.
+ * @param[in] spu Structure containing all information
+ * @param[out] code_error Returns the error code
+*/
+
+int param_check (COMMANDS *cmd, LABELS *label, int cmd_len)
 {
+    my_assert (cmd != NULL);
+    my_assert (label != NULL);
+
     if (*(cmd->command + cmd_len + 1) == '[' && *(cmd->command + cmd->size_str - 1) == ']')
     {
         CHECK_ERROR (get_param (cmd, label, cmd_len, 2))
@@ -201,11 +273,20 @@ int param_check (COMMANDS *cmd, LABELS **label, int cmd_len)
     return ERR_NO;
 }
 
-int get_param (COMMANDS *cmd, LABELS **label, int cmd_len, int len)
+/**
+ * Function that finds a parameter for a command.
+ * @param[in] spu Structure containing all information
+ * @param[out] code_error Returns the error code
+*/
+
+int get_param (COMMANDS *cmd, LABELS *label, int cmd_len, int len)
 {
-    if (isdigit (*(cmd->command + cmd_len + len)))
+    my_assert (cmd != NULL);
+    my_assert (label != NULL);
+
+    /*if (isdigit (*(cmd->command + cmd_len + len)) || *(cmd->command + cmd_len + len) == '-')
     {
-        for (size_t ip = 0; ip < cmd->size_str - cmd_len - len - 1; ip++)
+        for (size_t ip = 1; ip < cmd->size_str - cmd_len - len - 1; ip++)
         {
             if (isdigit (*(cmd->command + cmd_len + len + ip)) == 0)
             {
@@ -215,6 +296,17 @@ int get_param (COMMANDS *cmd, LABELS **label, int cmd_len, int len)
 
         cmd->argc = atoi (cmd->command + cmd_len + len);
 
+        if (*(cmd->command + cmd_len + len) == '-')
+        {
+            cmd->argc = cmd->argc * (-1);
+        }
+
+        printf ("%d\n", cmd->argc);
+
+        cmd->cmd_code |= HAVE_ARG;
+    }*/
+    if (sscanf (cmd->command + cmd_len + len, "%d", &cmd->argc) == 1)
+    {
         cmd->cmd_code |= HAVE_ARG;
     }
     else if (toupper (*(cmd->command + cmd_len + len)) == 'R' && toupper (*(cmd->command + cmd_len + len + 2)) == 'X')
@@ -233,11 +325,11 @@ int get_param (COMMANDS *cmd, LABELS **label, int cmd_len, int len)
     {
         for (size_t ip = 0; ip < LABEL_CNT; ip++)
         {
-            if (label[ip] != NULL)
+            if (label[ip].name_label != NULL)
             {
-                if (strncasecmp (cmd->command + cmd_len + len, label[ip]->name_label, sizeof (label[ip]->name_label) - 2) == 0)
+                if (strncasecmp (cmd->command + cmd_len + len, label[ip].name_label, label[ip].size_label) == 0)
                 {
-                    cmd->argc = label[ip]->label_n_str;
+                    cmd->argc = label[ip].label_n_str;
                     cmd->cmd_code |= HAVE_ARG;
                     
                     return ERR_NO;

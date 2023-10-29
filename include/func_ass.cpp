@@ -4,31 +4,23 @@
 
 /**
  * Function that counts the number of commands.
- * @param[in] data Structure containing all information
+ * @param[in] spu Structure containing all information
 */
 
-void number_of_commands (TEXT *data)
+void number_of_commands (SPU *spu)
 {
-    my_assert (data != NULL);
+    my_assert (spu != NULL);
 
-    for (size_t i = 2; i <= data->size_file; i++)
+    for (size_t ip = 0; ip <= spu->size_file; ip++)
     {
-        if ((data->buf[i] == '\n' && data->buf[i - 2] != '\n') || data->buf[i] == ' ')
+        if ((spu->buf_input[ip] == '\n' || spu->buf_input[ip] == '\0') && spu->buf_input[ip - 2] != '\n')
         {
-            data->n_words++;
+            spu->n_cmd++;
+            spu->n_words++;
         }
-        else if (data->buf[i] == '\0' && data->buf[i - 2] != '\n')
+        else if (spu->buf_input[ip] == ' ' && spu->buf_input[ip - 1] != ' ' && spu->buf_input[ip + 1] != ' ')
         {
-            data->n_words++;
-        }
-
-        if (data->buf[i] == '\n' && data->buf[i - 2] != '\n')
-        {
-            data->n_cmd++;
-        }
-        else if (data->buf[i] == '\0' && data->buf[i - 2] != '\n')
-        {
-            data->n_cmd++;
+            spu->n_words++;
         }
     }
 }
@@ -53,25 +45,24 @@ size_t get_file_size (FILE *stream)
 
 /**
  * Function that clears all variables.
- * @param[in] data Structure containing all information
+ * @param[in] spu Structure containing all information
 */
 
-void text_free(TEXT *data)
+void spu_dtor (SPU *spu)
 {
-    my_assert (data != NULL)
+    my_assert (spu != NULL)
 
-    free (data->buf);
-    free (data->cmd);
-    free (data->label);
-    data->buf = NULL;
-    data->cmd = NULL;
-    data->label = NULL;
+    free (spu->buf_input);
+    free (spu->cmd);
+    free (spu->label);
+    spu->buf_input = NULL;
+    spu->cmd = NULL;
+    spu->label = NULL;
 
-    data->fp_input = NULL;
-    data->fp_print_txt = NULL;
-    data->fp_print_bin = NULL;
+    spu->fp_input = NULL;
+    spu->fp_print_txt = NULL;
+    spu->fp_print_bin = NULL;
 
-    data->n_cmd = VALUE_DEFAULT;
-    data->size_file = VALUE_DEFAULT;
-    data->n_words = VALUE_DEFAULT;
+    spu->n_cmd = VALUE_DEFAULT;
+    spu->size_file = VALUE_DEFAULT;
 }

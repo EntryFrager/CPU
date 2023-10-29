@@ -38,6 +38,6 @@ const char* my_strerr (unsigned code_error)
     }
     else
     {
-        return "Неизвестная ошибка.\n";
+        return "Unknown error.\n";
     }
 }

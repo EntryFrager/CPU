@@ -21,8 +21,6 @@
     #define ON_DEBUG(...)
 #endif
 
-static int CODE_ERROR = 0;                                                                                              ///< Variable for error codes.
-
 #define assert_stack(stack) {                                           \
     if ((CODE_ERROR = stack_verification (stack)) != STACK_OK)          \
     {                                                                   \
@@ -33,7 +31,7 @@ static int CODE_ERROR = 0;                                                      
 
 typedef double ELEMENT;                                                                                                 ///< The type of stack elements.
 
-const ELEMENT STACK_VALUE_VENOM = -100000;                                                                              ///< Variable containing poison
+const int STACK_VALUE_VENOM = -100000;                                                                                  ///< Variable containing poison
 
 #ifdef CANARIES_CHECK
     typedef unsigned long long CANARY_TYPE;                                                                             ///< Type of canaries.

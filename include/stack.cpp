@@ -35,6 +35,8 @@ static const int DOWN = 2;
 static const int HST_UP = 2;
 static const int HST_DOWN = 4;
 
+static int CODE_ERROR = 0;                                                                                              ///< Variable for error codes.
+
 /**
  * Function to create a stack.
  * @param[in] stk pointer to the stack to be created
@@ -86,8 +88,8 @@ void stack_dtor (STACK *stk)
     free (stk->data - sizeof (CANARY_TYPE) / sizeof (ELEMENT));
 
 #ifdef CANARIES_CHECK
-    stk->left_canary  = STACK_VALUE_VENOM;
-    stk->right_canary = STACK_VALUE_VENOM;
+    stk->left_canary  = (CANARY_TYPE) STACK_VALUE_VENOM;
+    stk->right_canary = (CANARY_TYPE) STACK_VALUE_VENOM;
 #endif
 
     ON_DEBUG (stk->hash_data = STACK_VALUE_VENOM,
@@ -200,6 +202,8 @@ int stack_realloc (STACK *stk, const int type_mode)
               stk->hash_struct = hash_control_struct (stk));
 
     assert_stack (stk);
+
+    return ERR_NO;
 }
 
 #ifdef HASH_CHECK
@@ -279,7 +283,7 @@ int stack_verification (STACK *stk)
         return STACK_ERR;
     }
 
-    if (stk->position == STACK_VALUE_VENOM && stk->size == STACK_VALUE_VENOM)
+    if ( stk->position == STACK_VALUE_VENOM &&  stk->size == STACK_VALUE_VENOM)
     {
         return STACK_POINTER_GARBAGE;
     }
