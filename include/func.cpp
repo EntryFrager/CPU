@@ -51,30 +51,18 @@ int input_text (SPU* spu)
  * @param[in] code The code this command should execute
 */
 
-#define DEF_CMD(name, num, have_param, code)                                            \
-    case (num):                                                                         \
-        {                                                                               \
-            spu->cmd[pos_cmd].command = command;                                        \
-            if (have_param)                                                             \
-            {                                                                           \
-                if (command & HAVE_RAM)                                                 \
-                {                                                                       \
-                    spu->cmd[pos_cmd].ram = spu->buf[++ip];                             \
-                }                                                                       \
-                if (command & HAVE_ARG)                                                 \
-                {                                                                       \
-                    spu->cmd[pos_cmd].argc = spu->buf[++ip];                            \
-                }                                                                       \
-                else if (command & HAVE_REG)                                            \
-                {                                                                       \
-                    spu->cmd[pos_cmd].reg = spu->buf[++ip];                             \
-                }                                                                       \
-                else                                                                    \
-                {                                                                       \
-                    return ERR_COMMAND;                                                 \
-                }                                                                       \
-            }                                                                           \
-            break;                                                                      \
+#define DEF_CMD(name, num, have_param, code)                                                \
+    case (num):                                                                             \
+        {                                                                                   \
+            spu->cmd[pos_cmd].command = command;                                            \
+            if (have_param)                                                                 \
+            {                                                                               \
+                if ((code_error = get_param(&spu->cmd[pos_cmd], spu->buf[++ip])) != ERR_NO) \
+                {                                                                           \
+                    return code_error;                                                      \
+                }                                                                           \
+            }                                                                               \
+            break;                                                                          \
         }
 
 /**
@@ -86,6 +74,8 @@ int input_text (SPU* spu)
 int split_commands (SPU *spu)
 {   
     my_assert (spu != NULL);
+
+    int code_error = 0;
 
     spu->n_cmd = number_of_commands (spu->buf, spu->size_file);
 
@@ -113,7 +103,23 @@ int split_commands (SPU *spu)
 
 #undef DEF_CMD
 
-#undef DEF_JUMP_CMD
+int get_param (COMMANDS *cmd, int param)
+{
+    if (cmd->command & HAVE_REG)
+    {
+        cmd->reg = param;
+    }
+    else if (cmd->command & HAVE_ARG)
+    {
+        cmd->argc = param;
+    }
+    else
+    {
+        return ERR_COMMAND;
+    }
+
+    return ERR_NO;
+}
 
 /**
  * Function that counts the number of commands.

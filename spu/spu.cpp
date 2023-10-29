@@ -54,7 +54,7 @@ int calc_func (SPU *spu)
     {
         ELEMENT a = VALUE_DEFAULT;
         ELEMENT b = VALUE_DEFAULT;
-        
+
         switch (spu->cmd[ip].command & 0x1F)
         {
             #include "..\include\commands.h"
@@ -92,11 +92,11 @@ void graph_video (ELEMENT *ram)
     {
         if (ram[ram_pos] == 0)
         {
-            printf (".");
+            printf ("\x1b[30m.\x1b[0m");
         }
         else
         {
-            printf ("*");
+            printf ("\x1b[31m*\x1b[0m");
         }
     }
 

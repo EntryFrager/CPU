@@ -46,6 +46,8 @@ DEF_CMD("push", PUSH, true,
                 }
 
                 DEF_PUSH (&spu->stack, spu->ram_value[spu->cmd[ip].argc]);
+
+                spu->ram_value[spu->cmd[ip].argc] = 0;
             }
         }
         else if (spu->cmd[ip].command & HAVE_REG)

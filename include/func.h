@@ -63,7 +63,6 @@ typedef struct {                                                                
     int command = VALUE_DEFAULT;                                                            ///< Command code.
     int argc    = VALUE_DEFAULT;                                                            ///< Argument value.
     int reg     = VALUE_DEFAULT;                                                            ///< Register value.
-    int ram     = VALUE_DEFAULT;                                                            ///< 1 if RAM is in use, 0 if not.
 } COMMANDS;
 
 typedef struct {                                                                            ///< Structure containing all the information necessary for the program to work.
@@ -90,6 +89,8 @@ typedef struct {                                                                
 int input_text (SPU *spu);                                                                  ///< A function that reads text from a file into a buffer.
 
 int split_commands (SPU *spu);                                                              ///< A function that divides buffer text into separate commands.
+
+int get_param (COMMANDS *cmd, int param);
 
 size_t number_of_commands (const int *data, const size_t size);                             ///< Function that counts the number of commands.
 
