@@ -154,7 +154,7 @@ int compare_command (SPU *spu)
 
     for (size_t ip = 0; ip < spu->n_cmd; ip++)
     {
-        if (label_count < LABEL_CNT)
+        if (label_count <= LABEL_CNT)
         {
             if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) == ':')
             {
@@ -284,7 +284,7 @@ int get_param (COMMANDS *cmd, LABELS *label, int cmd_len, int len)
     my_assert (cmd != NULL);
     my_assert (label != NULL);
 
-    /*if (isdigit (*(cmd->command + cmd_len + len)) || *(cmd->command + cmd_len + len) == '-')
+    if (isdigit (*(cmd->command + cmd_len + len)) || *(cmd->command + cmd_len + len) == '-')
     {
         for (size_t ip = 1; ip < cmd->size_str - cmd_len - len - 1; ip++)
         {
@@ -292,21 +292,18 @@ int get_param (COMMANDS *cmd, LABELS *label, int cmd_len, int len)
             {
                 return ERR_ARGC;
             }
-        }
-
-        cmd->argc = atoi (cmd->command + cmd_len + len);
+        }        
 
         if (*(cmd->command + cmd_len + len) == '-')
         {
+            cmd->argc = atoi (cmd->command + cmd_len + len + 1);
             cmd->argc = cmd->argc * (-1);
         }
+        else
+        {
+            cmd->argc = atoi (cmd->command + cmd_len + len);   
+        }
 
-        printf ("%d\n", cmd->argc);
-
-        cmd->cmd_code |= HAVE_ARG;
-    }*/
-    if (sscanf (cmd->command + cmd_len + len, "%d", &cmd->argc) == 1)
-    {
         cmd->cmd_code |= HAVE_ARG;
     }
     else if (toupper (*(cmd->command + cmd_len + len)) == 'R' && toupper (*(cmd->command + cmd_len + len + 2)) == 'X')

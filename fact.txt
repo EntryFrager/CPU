@@ -8,25 +8,31 @@ hlt
 
 go:
 push 1
-pop rax
+pop rbx
 push 1
+call factorial
+push rax
 out
-CALL factorial
-return:
 hlt
 
 
 factorial:
+    push rbx
+    mul
+    pop rax
     push rax
+
+    push rbx
     push 1
     add
-    pop rax
-    push rax
-    mul
-    out
+    pop rbx
+
+    push rbx
     push rdx
-    push rax
-    je return
-    pop rax
+    jb return
     pop rdx
+    pop rbx
     call factorial
+
+return:
+    ret

@@ -25,6 +25,7 @@ enum COMMANDS_CODE {                                                            
     JBE,                                                                                    ///< Jump command if the last number written to the stack is less than or equal to the second to last number written to the stack.
     JE,                                                                                     ///< Jump command if the last number written to the stack is equal to the second to last number written to the stack.
     JNE,                                                                                    ///< Jump command if the last number written to the stack is not equal to the second to last number written to the stack.
+    OUTC,
     ADD,                                                                                    ///< Addition command.
     SUB,                                                                                    ///< Subtraction command.
     MUL,                                                                                    ///< Multiply command.

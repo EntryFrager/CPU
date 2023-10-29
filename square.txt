@@ -1,16 +1,93 @@
 in
 in
 in
-draw
 pop rcx
 pop rbx
 pop rax
-CALL discr
-push 0
-push rdx
-je solve_linear
-ja solve_square
-jb no_solve
+call solve_dispetcher
+hlt
+
+solve_dispetcher:
+    push 0
+    push rax
+    je solve_linear
+    call solve_square
+    ret
+
+infinite_solutions:
+    push rcx
+    push 0
+    jne print_no_solve
+
+    call print_infinity_solutions
+
+    hlt
+
+solve_linear:
+    push 0
+    push rbx
+    je infinite_solutions
+
+    call print_one_solutions
+
+    push -1
+    push rcx
+    mul
+    push rbx
+    div
+    out
+    hlt
+
+solve_square:
+    call discr
+    push 0
+    push rdx
+    je discr_null
+    jb print_no_solve
+
+    push rdx
+    sqrt
+    pop rdx
+
+    call print_two_solutions
+
+    push -1
+    push rbx
+    mul
+    push rdx
+    sub
+    push 2
+    push rax
+    mul
+    div
+    out
+
+    push -1
+    push rbx
+    mul
+    push rdx
+    add
+    push 2
+    push rax
+    mul
+    div
+    out
+
+    ret
+
+discr_null:
+    call print_one_solutions
+
+    push -1
+    push rbx
+    mul
+    push 2
+    push rax
+    mul
+    div
+    out
+    hlt
+
 
 discr:
     push rbx
@@ -25,47 +102,74 @@ discr:
     pop rdx
     ret
 
-solve_linear:
-    push -1
-    push rbx
-    mul
-    push 2
-    push rax
-    mul
-    div
-    out
+print_no_solve:
+    push 78
+    push 111
+    push 32
+    push 115
+    push 111
+    push 108
+    push 117
+    push 116
+    push 105
+    push 111
+    push 110
+    push 115
+    outc 12
     hlt
 
-solve_square:
-    push rdx
-    sqrt
-    pop rdx
+print_one_solutions:
+    push 79
+    push 110
+    push 101
+    push 32
+    push 115
+    push 111
+    push 108
+    push 117
+    push 116
+    push 105
+    push 111
+    push 110
+    push 115
+    outc 13
+    ret
 
+print_two_solutions:
+    push 84
+    push 119
+    push 111
+    push 32
+    push 115
+    push 111
+    push 108
+    push 117
+    push 116
+    push 105
+    push 111
+    push 110
+    push 115
+    outc 13
+    ret
 
-    push -1
-    push rbx
-    mul
-    push rdx
-    sub
-    push 2
-    push rax
-    mul
-    div
-    out
-
-
-    push -1
-    push rbx
-    mul
-    push rdx
-    add
-    push 2
-    push rax
-    mul
-    div
-    out
-
-    hlt
-
-no_solve:
-    hlt
+print_infinity_solutions:
+    push 73
+    push 110
+    push 102
+    push 105
+    push 110
+    push 105
+    push 116
+    push 121
+    push 32
+    push 115
+    push 111
+    push 108
+    push 117
+    push 116
+    push 105
+    push 111
+    push 110
+    push 115
+    outc 18
+    ret

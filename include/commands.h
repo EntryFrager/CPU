@@ -10,6 +10,24 @@ DEF_CMD("hlt", HLT, false,
         return ERR_NO;
     })
 
+DEF_CMD("outc", OUTC, true,
+    {
+        char *outc = (char *) calloc (spu->cmd[ip].argc + 1, sizeof (char));
+        my_assert (outc != NULL);
+
+        for (size_t i = 0; i < spu->cmd[ip].argc; i++)
+        {
+            *(outc + spu->cmd[ip].argc - i - 1) = (int) DEF_POP(&spu->stack);
+        }
+
+        *(outc + spu->cmd[ip].argc) = '\0';
+        
+        fprintf (spu->fp_print, "%s\n", outc);
+
+        free (outc);
+        outc = NULL;
+    })
+
 /**
  * The command that prints the response.
 */
@@ -141,7 +159,7 @@ DEF_CMD("div", DIV, false,
     {
         a = DEF_POP (&spu->stack);
         b = DEF_POP (&spu->stack);
-
+        
         DEF_PUSH (&spu->stack, b / a);
     })
 
