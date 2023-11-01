@@ -10,19 +10,19 @@ int main ()
 {
     SPU spu = {};
 
+    spu_ctor (&spu);
+
     int code_error = input_text (&spu);
 
-    if (code_error != 0)
-    {
-        fprintf(stderr, "%s", my_strerr (code_error));
-    }
+    CHECK_ERROR (code_error)
 
-    if ((code_error = calc_func (&spu)) != ERR_NO)
-    {
-        fprintf (stderr, "%s", my_strerr (code_error));
-    }
+    code_error = spu_ran (&spu);
 
-    spu_dtor (&spu);
+    CHECK_ERROR (code_error)
+
+    code_error = spu_dtor (&spu);
+
+    CHECK_ERROR (code_error)
 
     return 0;
 }

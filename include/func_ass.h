@@ -11,6 +11,20 @@
 
 #include "..\include\error.h"                                                                   ///< Connects a file that displays errors.
 
+#define DEBUG                                                                                   ///< Macro for program debugging.
+
+#ifdef DEBUG
+    #define CHECK_ERROR_PRINT(code_error) if (code_error != ERR_NO) fprintf (stderr, "%s", my_strerr (code_error));
+#else
+    #define CHECK_ERROR_PRINT(...)
+#endif
+
+#ifdef DEBUG
+    #define CHECK_ERROR_RETURN(code_error) if (code_error != ERR_NO) return code_error;
+#else
+    #define CHECK_ERROR_RETURN(...)
+#endif
+
 enum COMMANDS_CODE {                                                                            ///< All command codes.
     HLT,                                                                                        ///< The hlt command that stops the program.
     OUT,                                                                                        ///< The command that prints the response.
@@ -25,7 +39,7 @@ enum COMMANDS_CODE {                                                            
     JBE,                                                                                        ///< Jump command if the last number written to the stack is less than or equal to the second to last number written to the stack.
     JE,                                                                                         ///< Jump command if the last number written to the stack is equal to the second to last number written to the stack.
     JNE,                                                                                        ///< Jump command if the last number written to the stack is not equal to the second to last number written to the stack.
-    OUTC,
+    OUTC,                                                                                       ///< A command that prints characters to a file by their ASCII codes from the stack.
     ADD,                                                                                        ///< Addition command.
     SUB,                                                                                        ///< Subtraction command.
     MUL,                                                                                        ///< Multiply command.
@@ -37,8 +51,6 @@ enum COMMANDS_CODE {                                                            
     DRAW,                                                                                       ///< Command that starts graphics memory.
 };
 
-const size_t COMMAND_CNT = 22;                                                                  ///< Number of commands.
-
 enum REG {                                                                                      ///< Register codes.
     RAX = 1,
     RBX,
@@ -46,18 +58,17 @@ enum REG {                                                                      
     RDX
 };
 
-const size_t REG_CNT = 4;                                                                       ///< Number of registers.
-
-const size_t LABEL_CNT = 10;                                                                    ///< Maximum number of tags.
+const size_t LABEL_CNT = 20;                                                                    ///< Maximum number of tags.
 
 const int HAVE_RAM = 1 << 7;                                                                    ///< Code for a command interacting with RAM.
 const int HAVE_REG = 1 << 6;                                                                    ///< Code for a command that interacts with a register.
 const int HAVE_ARG = 1 << 5;                                                                    ///< Code for the command that interacts with the argument.
+const int HAVE_NOT_PARAM = 1;
 
-const int VALUE_DEFAULT = 0;                                                                    ///< Default value of variables.
+const int VALUE_DEFAULT = -1;                                                                   ///< Default value of variables.
 
 typedef struct {                                                                                ///< Structure containing information about labels.
-    int label_n_str = VALUE_DEFAULT;                                                            ///< Line number with label.
+    int label_ip = VALUE_DEFAULT;                                                               ///< Line number with label.
     char *name_label = NULL;                                                                    ///< Label name.
     int size_label = VALUE_DEFAULT;
 } LABELS;
@@ -65,10 +76,9 @@ typedef struct {                                                                
 typedef struct {                                                                                ///< Structure containing information about commands.
     size_t size_str = VALUE_DEFAULT;                                                            ///< Command line size.
     char *command = NULL;                                                                       ///< Command line.
-    int cmd_code = 0;
+    int cmd_code = VALUE_DEFAULT;
     int argc = VALUE_DEFAULT;                                                                   ///< Argument value.
     int reg = VALUE_DEFAULT;                                                                    ///< Register value.
-    int ram = VALUE_DEFAULT;                                                                    ///< 1 if RAM is in use, 0 if not.
 } COMMANDS;
 
 typedef struct {                                                                                ///< Structure containing all the information necessary for the program to work.
@@ -81,19 +91,22 @@ typedef struct {                                                                
     FILE *fp_print_bin = NULL;                                                                  ///< Pointer to output file of type bin.
 
     char *buf_input = NULL;                                                                     ///< A buffer containing all the information read from the file.
+    int *buf_output = NULL;
 
-    size_t size_file = VALUE_DEFAULT;                                                           ///< File size.
-    size_t n_cmd = VALUE_DEFAULT;                                                               ///< Number of commands.
-    size_t n_words= VALUE_DEFAULT;                                                              ///< Word count.
+    size_t size_file = 0;                                                                       ///< File size.
+    size_t n_cmd = 0;                                                                           ///< Number of commands.
+    size_t n_words= 0;                                                                          ///< Word count.
 
     COMMANDS *cmd = NULL;                                                                       ///< An array of structures storing information about commands.
     LABELS *label = NULL;                                                                       ///< An array of structures storing information about labels.
 } SPU;
 
+int spu_ctor (SPU *spu, int argc, char **argv);                                                 ///< Function to initialize the spu structure.
+
 void number_of_commands (SPU *spu);                                                             ///< Function that counts the number of commands.
 
 size_t get_file_size (FILE *stream);                                                            ///< Function returning file size.
 
-void spu_dtor (SPU *spu);                                                                       ///< Function that clears all variables.
+int spu_dtor (SPU *spu);                                                                        ///< Function that clears all variables.
 
 #endif //FUNC_H

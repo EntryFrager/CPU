@@ -10,17 +10,22 @@ DEF_CMD("hlt", HLT, false,
         return ERR_NO;
     })
 
+/**
+ * This command prints characters whose acsii codes are stored on the stack.
+*/
+
 DEF_CMD("outc", OUTC, true,
     {
-        char *outc = (char *) calloc (spu->cmd[ip].argc + 1, sizeof (char));
+        ip++;
+        char *outc = (char *) calloc (*(spu->buf + ip) + 1, sizeof (char));
         my_assert (outc != NULL);
 
-        for (size_t i = 0; i < spu->cmd[ip].argc; i++)
+        for (size_t i = 0; i < (size_t) *(spu->buf + ip); i++)
         {
-            *(outc + spu->cmd[ip].argc - i - 1) = (int) DEF_POP(&spu->stack);
+            *(outc + *(spu->buf + ip) - i - 1) = (int) DEF_POP(&spu->stack);
         }
 
-        *(outc + spu->cmd[ip].argc) = '\0';
+        *(outc + *(spu->buf + ip)) = '\0';
         
         fprintf (spu->fp_print, "%s\n", outc);
 
@@ -34,7 +39,7 @@ DEF_CMD("outc", OUTC, true,
 
 DEF_CMD("out", OUT, false,
     {
-        fprintf (spu->fp_print, "Ответ: %lf\n", spu->stack.data[spu->stack.position - 1]);
+        fprintf (spu->fp_print, "Answer: %lf\n", spu->stack.data[spu->stack.position - 1]);
     })
 
 /**
@@ -43,38 +48,46 @@ DEF_CMD("out", OUT, false,
 
 DEF_CMD("push", PUSH, true,
     {
-        if (spu->cmd[ip].command & HAVE_RAM)
+        if (*(spu->buf + ip) & HAVE_RAM)
         {
-            if (spu->cmd[ip].command & HAVE_REG)
+            if (*(spu->buf + ip) & HAVE_REG)
             {
-                if (spu->reg_value[spu->cmd[ip].reg - 1] > 99 || spu->reg_value[spu->cmd[ip].reg - 1] < 0)
+                ip++;
+                if (spu->reg_value[*(spu->buf + ip) - 1] > 99 || spu->reg_value[*(spu->buf + ip) - 1] < 0)
                 {
                     return ERR_RAM;
                 }
 
-                DEF_PUSH (&spu->stack, spu->ram_value[(size_t) spu->reg_value[spu->cmd[ip].reg - 1]]);
+                DEF_PUSH (&spu->stack, spu->ram_value[(size_t) spu->reg_value[*(spu->buf + ip) - 1]]);
 
-                spu->ram_value[(size_t) spu->reg_value[spu->cmd[ip].reg - 1]] = 0;
+                spu->ram_value[(size_t) spu->reg_value[*(spu->buf + ip) - 1]] = 0;
             }
             else
             {
-                if (spu->cmd[ip].argc > 99 || spu->cmd[ip].argc < 0)
+                ip++;
+                if (*(spu->buf + ip) > 99 || *(spu->buf + ip) < 0)
                 {
                     return ERR_RAM;
                 }
 
-                DEF_PUSH (&spu->stack, spu->ram_value[spu->cmd[ip].argc]);
+                DEF_PUSH (&spu->stack, spu->ram_value[*(spu->buf + ip)]);
 
-                spu->ram_value[spu->cmd[ip].argc] = 0;
+                spu->ram_value[*(spu->buf + ip)] = 0;
             }
         }
-        else if (spu->cmd[ip].command & HAVE_REG)
+        else if (*(spu->buf + ip) & HAVE_REG)
         {
-            DEF_PUSH (&spu->stack, spu->reg_value[spu->cmd[ip].reg - 1]);
+            ip++;
+            DEF_PUSH (&spu->stack, spu->reg_value[*(spu->buf + ip) - 1]);
         }
-        else if (spu->cmd[ip].command & HAVE_ARG)
+        else if (*(spu->buf + ip) & HAVE_ARG)
         {
-            DEF_PUSH (&spu->stack, spu->cmd[ip].argc);
+            ip++;
+            DEF_PUSH (&spu->stack, *(spu->buf + ip));
+        }
+        else
+        {
+            return ERR_ARGC;
         }
     })
 
@@ -84,30 +97,33 @@ DEF_CMD("push", PUSH, true,
 
 DEF_CMD("pop", POP, true,
     {
-        if (spu->cmd[ip].command & HAVE_RAM)
+        if (*(spu->buf + ip) & HAVE_RAM)
         {
-            if (spu->cmd[ip].command & HAVE_REG)
+            if (*(spu->buf + ip) & HAVE_REG)
             {
-                if (spu->reg_value[spu->cmd[ip].reg - 1] > 99 || spu->reg_value[spu->cmd[ip].reg - 1] < 0)
+                ip++;
+                if (spu->reg_value[*(spu->buf + ip) - 1] > 99 || spu->reg_value[*(spu->buf + ip) - 1] < 0)
                 {
                     return ERR_RAM;
                 }
 
-                spu->ram_value[(size_t) spu->reg_value[spu->cmd[ip].reg - 1]] = DEF_POP (&spu->stack);
+                spu->ram_value[(size_t) spu->reg_value[*(spu->buf + ip) - 1]] = DEF_POP (&spu->stack);
             }
             else
             {
-                if (spu->cmd[ip].argc > 99 || spu->cmd[ip].argc < 0)
+                ip++;
+                if (*(spu->buf + ip) > 99 || *(spu->buf + ip) < 0)
                 {
                     return ERR_RAM;
                 }
 
-                spu->ram_value[(size_t) spu->cmd[ip].argc] = DEF_POP (&spu->stack);
+                spu->ram_value[(size_t) *(spu->buf + ip)] = DEF_POP (&spu->stack);
             }
         }
-        else if (spu->cmd[ip].command & HAVE_REG)
+        else if (*(spu->buf + ip) & HAVE_REG)
         {
-            spu->reg_value[spu->cmd[ip].reg - 1] = DEF_POP (&spu->stack);
+            ip++;
+            spu->reg_value[*(spu->buf + ip) - 1] = DEF_POP (&spu->stack);
         }
         else
         {
@@ -159,7 +175,7 @@ DEF_CMD("div", DIV, false,
     {
         a = DEF_POP (&spu->stack);
         b = DEF_POP (&spu->stack);
-        
+
         DEF_PUSH (&spu->stack, b / a);
     })
 
@@ -169,9 +185,7 @@ DEF_CMD("div", DIV, false,
 
 DEF_CMD("sin", SIN, false,
     {
-        a = DEF_POP (&spu->stack);
-
-        DEF_PUSH (&spu->stack, (ELEMENT) sin (a));
+        DEF_PUSH (&spu->stack, (ELEMENT) sin (DEF_POP (&spu->stack)));
     })
 
 /**
@@ -180,9 +194,7 @@ DEF_CMD("sin", SIN, false,
 
 DEF_CMD("cos", COS, false,
     {
-        a = DEF_POP (&spu->stack);
-
-        DEF_PUSH (&spu->stack, (ELEMENT) cos (a));
+        DEF_PUSH (&spu->stack, (ELEMENT) cos (DEF_POP (&spu->stack)));
     })
 
 /**
@@ -191,9 +203,7 @@ DEF_CMD("cos", COS, false,
 
 DEF_CMD("sqrt", SQRT, false,
     {
-        a = DEF_POP (&spu->stack);
-
-        DEF_PUSH (&spu->stack, (ELEMENT) sqrt (a));
+        DEF_PUSH (&spu->stack, (ELEMENT) sqrt (DEF_POP (&spu->stack)));
     })
 
 /**
@@ -210,16 +220,6 @@ DEF_CMD("in", IN, false,
         }
 
         DEF_PUSH (&spu->stack, (ELEMENT) value);
-    })
-
-/**
- * Return command to label call command.
-*/
-
-DEF_CMD("ret", RET, false,
-    {
-        a = DEF_POP (&spu->stack_call);
-        ip = (size_t) a;
     })
 
 /**

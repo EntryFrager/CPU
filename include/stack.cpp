@@ -92,7 +92,7 @@ void stack_dtor (STACK *stk)
     stk->right_canary = (CANARY_TYPE) STACK_VALUE_VENOM;
 #endif
 
-    ON_DEBUG (stk->hash_data = STACK_VALUE_VENOM,
+    ON_DEBUG (stk->hash_data   = STACK_VALUE_VENOM,
               stk->hash_struct = STACK_VALUE_VENOM);
 
     stk->data = NULL;

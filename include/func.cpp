@@ -3,23 +3,47 @@
 #include "func.h"
 
 /**
+ * Function to initialize the spu structure.
+ * @param[in] spu Structure containing all information
+ * @param[out] code_error Returns the error code
+*/
+
+int spu_ctor (SPU *spu)
+{
+    my_assert (spu != NULL);
+
+    stack_ctor (&spu->stack, STACK_DEFAULT_SIZE);
+    stack_ctor (&spu->stack_call, LABEL_CNT);
+
+    spu->file_name_input = (const char *) "..\\ass_output.bin";
+    spu->file_name_print = "..\\result.txt";
+
+    spu->fp_input = fopen (spu->file_name_input, "r + b");
+    spu->fp_print = fopen (spu->file_name_print, "wb");
+
+    if (spu->fp_print == NULL || spu->fp_input == NULL)
+    {
+        return ERR_FOPEN;
+    }
+
+    spu->ram_value = (ELEMENT *) calloc (SIZE_RAM, sizeof (ELEMENT));
+    my_assert (spu->ram_value != NULL);
+
+    spu->reg_value = (ELEMENT *) calloc (REG_CNT , sizeof (ELEMENT));
+    my_assert (spu->reg_value != NULL);
+
+    return ERR_NO;
+}
+
+/**
  * Function that reads information from a file.
  * @param[in] spu Structure containing all information
- * @param[out] code_error Code error
+ * @param[out] code_error Returns the error code
 */
 
 int input_text (SPU* spu)
 {
     my_assert (spu != NULL);
-
-    spu->file_name_input = (const char *) "..\\ass_output.bin";
-
-    spu->fp_input = fopen (spu->file_name_input, "r + b");
-
-    if (spu->fp_input == NULL)
-    {
-        return ERR_FOPEN;
-    }
 
     spu->size_file = get_file_size (spu->fp_input) / 4;
 
@@ -33,117 +57,7 @@ int input_text (SPU* spu)
         return ERR_FREAD;
     }
 
-    if (fclose (spu->fp_input) != 0)
-    {
-        return ERR_FCLOSE;
-    }
-
-    int code_error = split_commands (spu);
-
-    return code_error;
-}
-
-/**
- * Macro for code generation of commands
- * @param[in] name Сommand name
- * @param[in] num Command number
- * @param[in] have_arg The presence of argument
- * @param[in] code The code this command should execute
-*/
-
-#define DEF_CMD(name, num, have_param, code)                                                \
-    case (num):                                                                             \
-        {                                                                                   \
-            spu->cmd[pos_cmd].command = command;                                            \
-            if (have_param)                                                                 \
-            {                                                                               \
-                if ((code_error = get_param(&spu->cmd[pos_cmd], spu->buf[++ip])) != ERR_NO) \
-                {                                                                           \
-                    return code_error;                                                      \
-                }                                                                           \
-            }                                                                               \
-            break;                                                                          \
-        }
-
-/**
- * A function that divides the buffer into separate commands.
- * @param[in] spu Structure containing all information
- * @param[out] code_error Returns the error code
-*/
-
-int split_commands (SPU *spu)
-{   
-    my_assert (spu != NULL);
-
-    int code_error = 0;
-
-    spu->n_cmd = number_of_commands (spu->buf, spu->size_file);
-
-    spu->cmd = (COMMANDS *) calloc (spu->n_cmd, sizeof (COMMANDS));
-
-    size_t pos_cmd = 0;
-
-    for (size_t ip = 0; ip < spu->size_file; ip++)
-    {
-        int command = spu->buf[ip];
-
-        switch (command & 0x1F)
-        {
-            #include "..\include\commands.h"
-            #include "..\include\jump_cmd.h"
-
-            default:
-                return ERR_COMMAND;
-        }
-        pos_cmd++;
-    }
-
     return ERR_NO;
-}
-
-#undef DEF_CMD
-
-int get_param (COMMANDS *cmd, int param)
-{
-    if (cmd->command & HAVE_REG)
-    {
-        cmd->reg = param;
-    }
-    else if (cmd->command & HAVE_ARG)
-    {
-        cmd->argc = param;
-    }
-    else
-    {
-        return ERR_COMMAND;
-    }
-
-    return ERR_NO;
-}
-
-/**
- * Function that counts the number of commands.
- * @param[in] spu Structure containing all information
- * @param[in] n_cmd
-*/
-
-size_t number_of_commands (const int *data, const size_t size)
-{
-    my_assert (data != NULL);
-
-    size_t n = 0;
-
-    for (size_t i = 0; i < size; i++)
-    {
-        n++;
-
-        if ((data[i] & HAVE_ARG) || (data[i] & HAVE_REG))
-        {
-            i++;
-        }
-    }
-
-    return n;
 }
 
 /**
@@ -167,28 +81,33 @@ size_t get_file_size (FILE *stream)
 /**
  * Function that clears all variables.
  * @param[in] spu Structure containing all information
+ * @param[out] code_error Returns the error code
 */
 
-void spu_dtor(SPU *spu)
+int spu_dtor(SPU *spu)
 {
     my_assert (spu != NULL)
+
+    if (fclose (spu->fp_print) != 0 || fclose (spu->fp_input) != 0)
+    {
+        return ERR_FCLOSE;
+    }
 
     stack_dtor (&spu->stack);
     stack_dtor (&spu->stack_call);
 
     free (spu->buf);
-    free (spu->cmd);
     free (spu->reg_value);
     free (spu->ram_value);
 
     spu->buf       = NULL;
-    spu->cmd       = NULL;
     spu->reg_value = NULL;
     spu->ram_value = NULL;
 
     spu->fp_input  = NULL;
     spu->fp_print  = NULL;
 
-    spu->n_cmd     = VALUE_DEFAULT;
     spu->size_file = VALUE_DEFAULT;
+
+    return ERR_NO;
 }

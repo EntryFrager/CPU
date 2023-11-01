@@ -7,43 +7,67 @@ pop rax
 call solve_dispetcher
 hlt
 
+
 solve_dispetcher:
     push 0
     push rax
-    je solve_linear
+    je call_solve_linear
+    jne call_solve_square
+    ret
+
+call_solve_linear:
+    call solve_linear
+    ret
+
+call_solve_square:
     call solve_square
     ret
+
 
 infinite_solutions:
     push rcx
     push 0
-    jne print_no_solve
+    jne call_print_no_solve
+    je call_print_infinity_solutions
+    ret
 
+call_print_no_solve:
+    call print_no_solve
+    ret
+
+call_print_infinity_solutions:
     call print_infinity_solutions
+    ret
 
-    hlt
 
 solve_linear:
     push 0
     push rbx
-    je infinite_solutions
+    je call_infinite_solutions
+    jne call_print_one_solutions
+    ret
 
+call_infinite_solutions:
+    call infinite_solutions
+    ret
+
+call_print_one_solutions:
     call print_one_solutions
-
     push -1
     push rcx
     mul
     push rbx
     div
     out
-    hlt
+    ret
+
 
 solve_square:
     call discr
     push 0
     push rdx
-    je discr_null
-    jb print_no_solve
+    je call_discr_null
+    jb call_print_no_solve
 
     push rdx
     sqrt
@@ -72,8 +96,16 @@ solve_square:
     mul
     div
     out
-
     ret
+
+call_discr_null:
+    CALL discr_null
+    ret
+
+call_print_no_solve:
+    call print_no_solve
+    ret
+
 
 discr_null:
     call print_one_solutions
@@ -86,7 +118,7 @@ discr_null:
     mul
     div
     out
-    hlt
+    ret
 
 
 discr:
@@ -102,6 +134,7 @@ discr:
     pop rdx
     ret
 
+
 print_no_solve:
     push 78
     push 111
@@ -116,7 +149,8 @@ print_no_solve:
     push 110
     push 115
     outc 12
-    hlt
+    ret
+
 
 print_one_solutions:
     push 79
@@ -135,6 +169,7 @@ print_one_solutions:
     outc 13
     ret
 
+
 print_two_solutions:
     push 84
     push 119
@@ -151,6 +186,7 @@ print_two_solutions:
     push 115
     outc 13
     ret
+
 
 print_infinity_solutions:
     push 73
