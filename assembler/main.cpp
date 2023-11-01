@@ -10,27 +10,22 @@ int main (int argc, char *argv[])
 {
     SPU spu = {};
 
-    int code_error = 0;
+    int code_error = spu_ctor (&spu, argc, argv);
+    CHECK_ERROR_PRINT(code_error)
 
-    if (argc == 2)
+    code_error = input_text (&spu);
+    CHECK_ERROR_PRINT (code_error)
+
+    for (size_t ip = 0; ip < spu.n_cmd; ip++)
     {
-        spu.file_name_input = (const char *) argv[1];
+        printf ("%s\n", spu.cmd[ip].command);
     }
 
-    if ((code_error = input_text (&spu)) != 0)
-    {
-        fprintf (stderr, "%s", my_strerr (code_error));
-    }
+    /*code_error = pars_command (&spu);
+    CHECK_ERROR_PRINT (code_error)*/
 
-    spu.file_name_print_bin = "..\\ass_output.bin";
-    spu.file_name_print_txt = "..\\ass_output.log";
-
-    if ((code_error = compare_command (&spu)) != 0)
-    {
-        fprintf (stderr, "%s", my_strerr (code_error));
-    }
-
-    spu_dtor (&spu);
+    code_error = spu_dtor (&spu);
+    CHECK_ERROR_PRINT (code_error)
 
     return 0;
 }

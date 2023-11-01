@@ -2,7 +2,11 @@
 
 #include "ass.h"
 
-#define CHECK_ERROR(expr) int code_error = 0; if ((code_error = expr) != ERR_NO) return code_error;
+static int check_argc (COMMANDS *cmd, int cmd_len, int len);
+
+static int check_reg  (COMMANDS *cmd, int cmd_len, int len);
+
+static int check_label  (SPU *spu, size_t ip, int cmd_len, int len);
 
 /**
  * A function that reads text from a file into one buffer.
@@ -120,7 +124,6 @@ void clean_comment (SPU *spu)
         }
 
         spu->cmd[ip].size_str -= space_count;
-
         *(spu->cmd[ip].command + spu->cmd[ip].size_str) = '\0';
     }
 }
@@ -128,63 +131,35 @@ void clean_comment (SPU *spu)
 #define DEF_CMD(name, num, have_arg, ...)                                               \
     if (strncasecmp (spu->cmd[ip].command, name, sizeof (name) - 1) == 0)               \
     {                                                                                   \
-        spu->cmd[ip].cmd_code = num;                                                    \
-        if (have_arg)                                                                   \
+        if (have_arg && spu->cmd[ip].argc == 0)                                         \
         {                                                                               \
-            CHECK_ERROR (param_check (&spu->cmd[ip], spu->label, sizeof (name) - 1))    \
+            code_error = check_label (spu, ip, sizeof (name) - 1, 1);                   \
+            CHECK_ERROR_RETURN (code_error)                                             \
         }                                                                               \
-        *(spu->cmd[ip].command + sizeof (name) - 1) = '\0';                             \
-    }                                                                                   \
-    else
-
+    }
 /**
  * A function that compiles user code into machine code and outputs it to a file.
  * @param[in] spu Structure containing all information
  * @param[out] code_error Returns the error code
 */
 
-int compare_command (SPU *spu)
+int pars_command (SPU *spu)
 {    
     my_assert (spu != NULL);
 
     spu->label = (LABELS *) calloc (LABEL_CNT, sizeof (LABELS));
     my_assert (spu->label != NULL);
 
-    size_t label_count = 0;
+    int code_error = pars_label (spu);
+    CHECK_ERROR_RETURN (code_error);
 
-    for (size_t ip = 0; ip < spu->n_cmd; ip++)
-    {
-        if (label_count <= LABEL_CNT)
-        {
-            if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) == ':')
-            {
-                spu->label[label_count].name_label  = spu->cmd[ip].command;
-                spu->label[label_count].label_n_str = ip - label_count;
-                spu->label[label_count].size_label  = spu->cmd[ip].size_str - 1;
-                label_count++;
-            }
-        }
-        else
-        {
-            return ERR_LABEL;
-        }
-    }
+    fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+\n");
+    fprintf (spu->fp_print_txt, "|  NAME_CMD  |  HEX_SPEAK |  VALUE_ARG |  VALUE_REG |\n");
+    fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+\n");
 
-    spu->n_words -= label_count;
-
-    spu->fp_print_txt = fopen (spu->file_name_print_txt, "w");
-
-    if (spu->fp_print_txt == NULL)
-    {
-        return ERR_FOPEN;
-    }
-
-    fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+------------+\n");
-    fprintf (spu->fp_print_txt, "|  NAME_CMD  |  HEX_SPEAK |  VALUE_ARG |  VALUE_REG |  VALUE_RAM |\n");
-    fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+------------+\n");
-
-    int *buf = (int *) calloc (sizeof (int), spu->n_words);
-    my_assert (buf != NULL);
+    spu->buf_output = (int *) calloc (sizeof (int), spu->n_words);
+    my_assert (spu->buf_output != NULL);
+    memset (spu->buf_output, 0, sizeof (int) * spu->n_words);
 
     int counter = 0;
 
@@ -192,54 +167,79 @@ int compare_command (SPU *spu)
     {
         if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) != ':')
         {
-            #include "..\include\commands.h"
             #include "..\include\jump_cmd.h"
 
-            {
-                return ERR_COMMAND;
-            }
-        }
+            fprintf (spu->fp_print_txt, "|%12s|%12x|%12d|%12d|\n", spu->cmd[ip].command, spu->cmd[ip].cmd_code, spu->cmd[ip].argc, spu->cmd[ip].reg);
 
-        if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) != ':')
+            fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+\n");
+
+            counter = write_buf (&spu->cmd[ip], spu->buf_output, counter);            
+        }
+    }
+
+    fwrite (spu->buf_output, sizeof (int), spu->n_words, spu->fp_print_bin);
+
+    return ERR_NO;
+}
+
+#undef DEF_CMD
+
+#define DEF_CMD(name, num, have_arg, ...)                                               \
+    if (strncasecmp (spu->cmd[ip].command, name, sizeof (name) - 1) == 0)               \
+    {                                                                                   \
+        spu->cmd[ip].cmd_code = num;                                                    \
+        if (have_arg)                                                                   \
+        {                                                                               \
+            code_error = param_check (spu, ip, sizeof (name) - 1);                      \
+            CHECK_ERROR_RETURN (code_error)                                             \
+            counter++;                                                                  \
+        }                                                                               \
+    }                                                                                   \
+    else
+
+/**
+ * Function that finds labels.
+ * @param[in] spu Structure containing all information
+ * @param[out] code_error Returns the error code
+*/
+
+int pars_label (SPU *spu)
+{
+    my_assert (spu != NULL);
+
+    size_t counter = 0;
+    int code_error = 0;
+
+    for (size_t ip = 0; ip < spu->n_cmd; ip++)
+    {
+        if (spu->n_label <= LABEL_CNT)
         {
-            fprintf (spu->fp_print_txt, "|%12s|%12x|%12d|%12d|%12d|\n", spu->cmd[ip].command, spu->cmd[ip].cmd_code, spu->cmd[ip].argc, spu->cmd[ip].reg, spu->cmd[ip].ram);
-
-            fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+------------+\n");
-
-            buf[counter++] = spu->cmd[ip].cmd_code;
-
-            if (spu->cmd[ip].cmd_code & HAVE_REG)
+            if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) == ':')
             {
-                buf[counter++] = spu->cmd[ip].reg;
+                spu->label[spu->n_label].name_label  = spu->cmd[ip].command;
+                spu->label[spu->n_label].label_ip = counter - spu->n_label;
+                spu->label[spu->n_label].size_label  = spu->cmd[ip].size_str - 1;
+                spu->n_label++;
             }
-            else if (spu->cmd[ip].cmd_code & HAVE_ARG)
+            else
             {
-                buf[counter++] = spu->cmd[ip].argc;
+                #include "../include/commands.h"
+                #include "../include/jump_cmd.h"
+
+                {
+                    return ERR_COMMAND;
+                }
             }
         }
+        else
+        {
+            return ERR_LABEL;
+        }
+
+        counter++;
     }
 
-    if (fclose (spu->fp_print_txt) != 0)
-    {
-        return ERR_FCLOSE;
-    }
-
-    spu->fp_print_bin = fopen (spu->file_name_print_bin, "w + b");
-
-    if (spu->fp_print_bin == NULL)
-    {
-        return ERR_FOPEN;
-    }
-
-    fwrite (buf, sizeof (int), spu->n_words, spu->fp_print_bin);
-
-    if (fclose (spu->fp_print_bin) != 0)
-    {
-        return ERR_FCLOSE;
-    }
-
-    free (buf);
-    buf = NULL;
+    spu->n_words -= spu->n_label;
 
     return ERR_NO;
 }
@@ -247,27 +247,57 @@ int compare_command (SPU *spu)
 #undef DEF_CMD
 
 /**
+ * A function that writes the converted command to the buffer.
+ * @param[in] cmd A structure that stores all information about a command
+ * @param[in] buf Write buffer
+ * @param[in] counter Counter where to write to buffer
+ * @param[out] counter Counter shifted to next element in buffer
+*/
+
+int write_buf (COMMANDS *cmd, int *buf, int counter)
+{
+    my_assert (cmd != NULL);
+    my_assert (buf != NULL);
+
+    buf[counter++] = cmd->cmd_code;
+
+    if (cmd->cmd_code & HAVE_REG)
+    {
+        buf[counter++] = cmd->reg;
+    }
+    else if (cmd->cmd_code & HAVE_ARG)
+    {
+        buf[counter++] = cmd->argc;
+    }
+
+    return counter;
+}
+
+/**
  * A function that checks whether a command has a parameter.
  * @param[in] spu Structure containing all information
+ * @param[in] label An array of structures storing all information about labels
+ * @param[in] cmd_len Command name length
  * @param[out] code_error Returns the error code
 */
 
-int param_check (COMMANDS *cmd, LABELS *label, int cmd_len)
+int param_check (SPU *spu, size_t ip, int cmd_len)
 {
-    my_assert (cmd != NULL);
-    my_assert (label != NULL);
+    my_assert (spu != NULL);
 
-    if (*(cmd->command + cmd_len + 1) == '[' && *(cmd->command + cmd->size_str - 1) == ']')
+    int code_error = 0;
+
+    if (*(spu->cmd[ip].command + cmd_len + 1) == '[' && *(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) == ']')
     {
-        CHECK_ERROR (get_param (cmd, label, cmd_len, 2))
+        code_error = get_param (spu, ip, cmd_len, 2);
+        CHECK_ERROR_RETURN (code_error)
 
-        cmd->ram = 1;
-
-        cmd->cmd_code |= HAVE_RAM;
+        spu->cmd[ip].cmd_code |= HAVE_RAM;
     }
     else
     {
-        CHECK_ERROR (get_param (cmd, label, cmd_len, 1))
+        code_error = get_param (spu, ip, cmd_len, 1);
+        CHECK_ERROR_RETURN (code_error)
     }
 
     return ERR_NO;
@@ -276,13 +306,48 @@ int param_check (COMMANDS *cmd, LABELS *label, int cmd_len)
 /**
  * Function that finds a parameter for a command.
  * @param[in] spu Structure containing all information
+ * @param[in] label An array of structures storing all information about labels
+ * @param[in] cmd_len Command name length
+ * @param[in] len 1 if space only, 2 if RAM is used
  * @param[out] code_error Returns the error code
 */
 
-int get_param (COMMANDS *cmd, LABELS *label, int cmd_len, int len)
+int get_param (SPU *spu, size_t ip, int cmd_len, int len)
+{
+    my_assert (spu != NULL);
+
+    int code_error = 0;
+
+    if ((code_error = check_argc (&spu->cmd[ip], cmd_len, len)) == HAVE_NOT_PARAM)
+    {
+        if ((code_error = check_reg  (&spu->cmd[ip], cmd_len, len)) == HAVE_NOT_PARAM)
+        {
+            return check_label (spu, ip, cmd_len, len);
+        }
+        else
+        {
+            return code_error;
+        }
+    }
+    else
+    {
+        return code_error;
+    }
+
+    return ERR_NO;
+}
+
+/**
+ *  Function that checks the argument of a command.
+ * @param[in] cmd A structure that stores all information about a command
+ * @param[in] cmd_len Command name length
+ * @param[in] len 1 if space only, 2 if RAM is used
+ * @param[out] code_error Returns the error code
+*/
+
+static int check_argc (COMMANDS *cmd, int cmd_len, int len)
 {
     my_assert (cmd != NULL);
-    my_assert (label != NULL);
 
     if (isdigit (*(cmd->command + cmd_len + len)) || *(cmd->command + cmd_len + len) == '-')
     {
@@ -305,39 +370,78 @@ int get_param (COMMANDS *cmd, LABELS *label, int cmd_len, int len)
         }
 
         cmd->cmd_code |= HAVE_ARG;
+        *(cmd->command + cmd_len) = '\0';
+
+        return ERR_NO;
     }
-    else if (toupper (*(cmd->command + cmd_len + len)) == 'R' && toupper (*(cmd->command + cmd_len + len + 2)) == 'X')
+    
+    return HAVE_NOT_PARAM;
+}
+
+/**
+ * Function that checks the case of a command.
+ * @param[in] cmd A structure that stores all information about a command
+ * @param[in] cmd_len Command name length
+ * @param[in] len 1 if space only, 2 if RAM is used
+ * @param[out] code_error Returns the error code
+*/
+
+static int check_reg (COMMANDS *cmd, int cmd_len, int len)
+{
+    my_assert (cmd != NULL);
+
+    if (toupper (*(cmd->command + cmd_len + len)) == 'R' && toupper (*(cmd->command + cmd_len + len + 2)) == 'X')
     {
         if (toupper (*(cmd->command + cmd_len + len + 1)) >= 'A' || toupper (*(cmd->command + cmd_len + len + 1)) <= 'D')
         {
             cmd->reg = toupper(*(cmd->command + cmd_len + len + 1)) - 'A' + 1;
             cmd->cmd_code |= HAVE_REG;
+            *(cmd->command + cmd_len) = '\0';
+
+            return ERR_NO;
         }
         else
         {
             return ERR_REG;
         }
     }
-    else
+
+    return HAVE_NOT_PARAM;
+}
+
+/**
+ * A function that checks the label of a command.
+ * @param[in] cmd A structure that stores all information about a command
+ * @param[in] label An array of structures storing all information about labels
+ * @param[in] cmd_len Command name length
+ * @param[in] len 1 if space only, 2 if RAM is used
+ * @param[out] code_error Returns the error code
+*/
+
+static int check_label (SPU *spu, size_t ip, int cmd_len, int len)
+{
+    my_assert (spu != NULL);
+
+    for (size_t pos_label = 0; pos_label <= spu->n_label; pos_label++)
     {
-        for (size_t ip = 0; ip < LABEL_CNT; ip++)
+        if (spu->label[pos_label].name_label != NULL)
         {
-            if (label[ip].name_label != NULL)
+            if (strncasecmp (spu->cmd[ip].command + cmd_len + len, spu->label[pos_label].name_label, spu->label[pos_label].size_label) == 0)
             {
-                if (strncasecmp (cmd->command + cmd_len + len, label[ip].name_label, label[ip].size_label) == 0)
-                {
-                    cmd->argc = label[ip].label_n_str;
-                    cmd->cmd_code |= HAVE_ARG;
-                    
-                    return ERR_NO;
-                }
+                spu->cmd[ip].argc = spu->label[pos_label].label_ip;
+                spu->cmd[ip].cmd_code |= HAVE_ARG;
+                *(spu->cmd[ip].command + cmd_len) = '\0';
+                
+                return ERR_NO;
             }
-            else
-            {
-                return ERR_LABEL;
-            }
+        }
+        else
+        {
+            spu->cmd[ip].argc = 0;
+
+            return ERR_NO;
         }
     }
 
-    return ERR_NO;
+    return ERR_LABEL;
 }
