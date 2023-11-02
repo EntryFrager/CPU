@@ -2,11 +2,13 @@
 
 #include "ass.h"
 
-static int check_argc (COMMANDS *cmd, int cmd_len, int len);
+static void process_label (SPU *spu, size_t ip, size_t counter_ip);
 
-static int check_reg  (COMMANDS *cmd, int cmd_len, int len);
+static int check_argc (COMMANDS *cmd, size_t cmd_len, size_t len);
 
-static int process_label  (SPU *spu, size_t ip, int cmd_len, int len);
+static int check_reg  (COMMANDS *cmd, size_t cmd_len, size_t len);
+
+static int find_process_label  (SPU *spu, size_t ip, size_t cmd_len, size_t len);
 
 /**
  * A function that reads text from a file into one buffer.
@@ -134,7 +136,7 @@ void clean_comment (SPU *spu)
         spu->cmd[ip].cmd_code = num;                                                    \
         if (have_arg)                                                                   \
         {                                                                               \
-            code_error = param_check (spu, ip, sizeof (name) - 1);                      \
+            code_error = check_param (spu, ip, sizeof (name) - 1);                      \
             CHECK_ERROR_RETURN (code_error)                                             \
             counter_ip++;                                                               \
         }                                                                               \
@@ -160,7 +162,6 @@ int pars_command (SPU *spu, size_t n_compile)
     }
     else if (n_compile == 2)
     {
-        printf ("%d\n", spu->n_words);
         spu->buf_output = (int *) calloc (sizeof (int), spu->n_words);
         my_assert (spu->buf_output != NULL);
 
@@ -178,10 +179,7 @@ int pars_command (SPU *spu, size_t n_compile)
         {
             if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) == ':' && n_compile == 1)
             {
-                spu->label[spu->n_label].name_label  = spu->cmd[ip].command;
-                spu->label[spu->n_label].label_ip = counter_ip - spu->n_label;
-                spu->label[spu->n_label].size_label  = spu->cmd[ip].size_str - 1;
-                spu->n_label++;
+                process_label (spu, ip, counter_ip);
             }
             else if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) != ':')
             {
@@ -213,11 +211,13 @@ int pars_command (SPU *spu, size_t n_compile)
     {
         spu->n_words -= spu->n_label;
     }
-    
+
     return ERR_NO;
 }
 
 #undef DEF_CMD
+
+
 
 /**
  * A function that writes the converted command to the buffer.
@@ -246,6 +246,14 @@ int write_buf (COMMANDS *cmd, int *buf, size_t counter)
     return counter;
 }
 
+void process_label (SPU *spu, size_t ip, size_t counter_ip)
+{
+    spu->label[spu->n_label].name_label  = spu->cmd[ip].command;
+    spu->label[spu->n_label].label_ip = counter_ip - spu->n_label;
+    spu->label[spu->n_label].size_label  = spu->cmd[ip].size_str - 1;
+    spu->n_label++;
+}
+
 /**
  * A function that checks whether a command has a parameter.
  * @param[in] spu Structure containing all information
@@ -254,7 +262,7 @@ int write_buf (COMMANDS *cmd, int *buf, size_t counter)
  * @param[out] code_error Returns the error code
 */
 
-int param_check (SPU *spu, size_t ip, int cmd_len)
+int check_param (SPU *spu, size_t ip, size_t cmd_len)
 {
     my_assert (spu != NULL);
 
@@ -285,7 +293,7 @@ int param_check (SPU *spu, size_t ip, int cmd_len)
  * @param[out] code_error Returns the error code
 */
 
-int get_param (SPU *spu, size_t ip, int cmd_len, int len)
+int get_param (SPU *spu, size_t ip, size_t cmd_len, size_t len)
 {
     my_assert (spu != NULL);
 
@@ -295,7 +303,7 @@ int get_param (SPU *spu, size_t ip, int cmd_len, int len)
     {
         if ((code_error = check_reg  (&spu->cmd[ip], cmd_len, len)) == HAVE_NOT_PARAM)
         {
-            return process_label (spu, ip, cmd_len, len);
+            return find_process_label (spu, ip, cmd_len, len);
         }
         else
         {
@@ -318,7 +326,7 @@ int get_param (SPU *spu, size_t ip, int cmd_len, int len)
  * @param[out] code_error Returns the error code
 */
 
-static int check_argc (COMMANDS *cmd, int cmd_len, int len)
+static int check_argc (COMMANDS *cmd, size_t cmd_len, size_t len)
 {
     my_assert (cmd != NULL);
 
@@ -359,7 +367,7 @@ static int check_argc (COMMANDS *cmd, int cmd_len, int len)
  * @param[out] code_error Returns the error code
 */
 
-static int check_reg (COMMANDS *cmd, int cmd_len, int len)
+static int check_reg (COMMANDS *cmd, size_t cmd_len, size_t len)
 {
     my_assert (cmd != NULL);
 
@@ -391,7 +399,7 @@ static int check_reg (COMMANDS *cmd, int cmd_len, int len)
  * @param[out] code_error Returns the error code
 */
 
-static int process_label (SPU *spu, size_t ip, int cmd_len, int len)
+static int find_process_label (SPU *spu, size_t ip, size_t cmd_len, size_t len)
 {
     my_assert (spu != NULL);
 
@@ -417,4 +425,14 @@ static int process_label (SPU *spu, size_t ip, int cmd_len, int len)
     }
 
     return ERR_LABEL;
+}
+
+/**
+ * A function that outputs compiled code to a binary file.
+ * @param[in] spu Structure containing all information
+*/
+
+void print_bin_text (SPU *spu)
+{
+    fwrite (spu->buf_output, sizeof (int), spu->n_words, spu->fp_print_bin);
 }

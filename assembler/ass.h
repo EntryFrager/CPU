@@ -15,8 +15,10 @@ int pars_command (SPU *spu, size_t n_compile);                                  
 
 int write_buf (COMMANDS *cmd, int *buf, size_t counter);                                            ///< A function that writes the converted command to the buffer.
 
-int param_check (SPU *spu, size_t ip, int cmd_len);                                                 ///< A function that checks whether a command has a parameter.
+int check_param (SPU *spu, size_t ip, size_t cmd_len);                                              ///< A function that checks whether a command has a parameter.
 
-int get_param (SPU *spu, size_t ip, int cmd_len, int len);                                          ///< Function that finds a parameter for a command.
+int get_param (SPU *spu, size_t ip, size_t cmd_len, size_t len);                                    ///< Function that finds a parameter for a command.
+
+void print_bin_text (SPU *spu);                                                                     ///< A function that outputs compiled code to a binary file.
 
 #endif //ASS_H

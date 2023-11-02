@@ -26,7 +26,7 @@ int main (int argc, char *argv[])
 
 #undef SECOND_COMPIL
 
-    fwrite (spu.buf_output, sizeof (int), spu.n_words, spu.fp_print_bin);
+    print_bin_text (&spu);
 
     code_error = spu_dtor (&spu);
     CHECK_ERROR_PRINT (code_error)
