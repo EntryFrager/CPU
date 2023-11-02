@@ -211,6 +211,10 @@ int pars_command (SPU *spu, size_t n_compile)
     {
         spu->n_words -= spu->n_label;
     }
+    else if (n_compile == 2)
+    {
+        fwrite (spu->buf_output, sizeof (int), spu->n_words, spu->fp_print_bin);
+    }
 
     return ERR_NO;
 }
@@ -425,14 +429,4 @@ static int find_process_label (SPU *spu, size_t ip, size_t cmd_len, size_t len)
     }
 
     return ERR_LABEL;
-}
-
-/**
- * A function that outputs compiled code to a binary file.
- * @param[in] spu Structure containing all information
-*/
-
-void print_bin_text (SPU *spu)
-{
-    fwrite (spu->buf_output, sizeof (int), spu->n_words, spu->fp_print_bin);
 }

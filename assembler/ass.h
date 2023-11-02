@@ -19,6 +19,4 @@ int check_param (SPU *spu, size_t ip, size_t cmd_len);                          
 
 int get_param (SPU *spu, size_t ip, size_t cmd_len, size_t len);                                    ///< Function that finds a parameter for a command.
 
-void print_bin_text (SPU *spu);                                                                     ///< A function that outputs compiled code to a binary file.
-
 #endif //ASS_H

@@ -19,14 +19,8 @@ int main (int argc, char *argv[])
     code_error = pars_command (&spu, 1);
     CHECK_ERROR_PRINT (code_error)
 
-#define SECOND_COMPIL
-
     code_error = pars_command (&spu, 2);
     CHECK_ERROR_PRINT (code_error)
-
-#undef SECOND_COMPIL
-
-    print_bin_text (&spu);
 
     code_error = spu_dtor (&spu);
     CHECK_ERROR_PRINT (code_error)
