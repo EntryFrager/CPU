@@ -2,13 +2,13 @@
 
 #include "ass.h"
 
-static void process_label (SPU *spu, size_t ip, size_t counter_ip);
+static void process_label (SPU *spu, size_t ip, size_t counter_ip);                                                                     ///< Label processing function.
 
-static int check_argc (COMMANDS *cmd, size_t cmd_len, size_t len);
+static int check_argc (COMMANDS *cmd, size_t cmd_len, size_t len);                                                                      ///< Function that checks the argument of a command.
 
-static int check_reg  (COMMANDS *cmd, size_t cmd_len, size_t len);
+static int check_reg  (COMMANDS *cmd, size_t cmd_len, size_t len);                                                                      ///< Function that checks the case of a command.
 
-static int find_process_label  (SPU *spu, size_t ip, size_t cmd_len, size_t len);
+static int find_process_label  (SPU *spu, size_t ip, size_t cmd_len, size_t len);                                                       ///< A function that checks the label of a command.
 
 /**
  * A function that reads text from a file into one buffer.
@@ -250,6 +250,13 @@ int write_buf (COMMANDS *cmd, int *buf, size_t counter)
     return counter;
 }
 
+/**
+ * Label processing function.
+ * @param[in] spu Structure containing all information
+ * @param[in] ip Number of the command that contains the label
+ * @param[in] counter_ip The address that the label contains
+*/
+
 void process_label (SPU *spu, size_t ip, size_t counter_ip)
 {
     spu->label[spu->n_label].name_label  = spu->cmd[ip].command;
@@ -323,7 +330,7 @@ int get_param (SPU *spu, size_t ip, size_t cmd_len, size_t len)
 }
 
 /**
- *  Function that checks the argument of a command.
+ * Function that checks the argument of a command.
  * @param[in] cmd A structure that stores all information about a command
  * @param[in] cmd_len Command name length
  * @param[in] len 1 if space only, 2 if RAM is used
