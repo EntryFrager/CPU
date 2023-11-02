@@ -310,9 +310,9 @@ int get_param (SPU *spu, size_t ip, size_t cmd_len, size_t len)
 
     int code_error = 0;
 
-    if ((code_error = check_argc (&spu->cmd[ip], cmd_len, len)) == HAVE_NOT_PARAM)
+    if ((code_error = check_argc (&spu->cmd[ip], cmd_len, len)) == NO_ARGUMENT)
     {
-        if ((code_error = check_reg  (&spu->cmd[ip], cmd_len, len)) == HAVE_NOT_PARAM)
+        if ((code_error = check_reg  (&spu->cmd[ip], cmd_len, len)) == NO_ARGUMENT)
         {
             return find_process_label (spu, ip, cmd_len, len);
         }
@@ -367,7 +367,7 @@ static int check_argc (COMMANDS *cmd, size_t cmd_len, size_t len)
         return ERR_NO;
     }
     
-    return HAVE_NOT_PARAM;
+    return NO_ARGUMENT;
 }
 
 /**
@@ -398,7 +398,7 @@ static int check_reg (COMMANDS *cmd, size_t cmd_len, size_t len)
         }
     }
 
-    return HAVE_NOT_PARAM;
+    return NO_ARGUMENT;
 }
 
 /**
