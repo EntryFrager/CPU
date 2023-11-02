@@ -19,8 +19,6 @@
     #define CHECK_ERROR(...)
 #endif
 
-#define CHECK_BUF_IP(buf_ip) if (buf_ip < 0 || buf_ip > spu->size_file) return ERR_BUF_IP;
-
 enum COMMANDS_CODE {                                                                        ///< All command codes.
     HLT,                                                                                    ///< The hlt command that stops the program.
     OUT,                                                                                    ///< The command that prints the response.
@@ -51,7 +49,7 @@ const size_t REG_CNT = 4;                                                       
 
 const size_t LABEL_CNT = 20;                                                                ///< Maximum number of tags.
 
-const size_t SIZE_RAM = 100;                                                                ///< RAM size.
+const size_t SIZE_RAM = 400;                                                                ///< RAM size.
 
 const int VALUE_DEFAULT = 0;                                                                ///< Default value of variables.
 

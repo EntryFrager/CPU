@@ -1,40 +1,5 @@
 /// @file commands.h
 
-#define CHECK_RAM_IP(ram_ip) if (ram_ip > 99 || ram_ip < 0) return ERR_RAM;
-
-#define GET_ARGUMENT(code_ram_reg, code_ram, code_reg, code_argc)   \
-    if ((spu->buf[ip] & HAVE_RAM) && (spu->buf[ip] & HAVE_REG))     \
-    {                                                               \
-        ip++;                                                       \
-        CHECK_BUF_IP(ip)                                            \
-        CHECK_RAM_IP (spu->reg_value[spu->buf[ip]]);                \
-        code_ram_reg                                                \
-    }                                                               \
-    else if (spu->buf[ip] & HAVE_RAM)                               \
-    {                                                               \
-        ip++;                                                       \
-        CHECK_BUF_IP(ip)                                            \
-        CHECK_RAM_IP (spu->buf[ip]);                                \
-        code_ram                                                    \
-    }                                                               \
-    else if (spu->buf[ip] & HAVE_REG)                               \
-    {                                                               \
-        ip++;                                                       \
-        CHECK_BUF_IP(ip)                                            \
-        code_reg                                                    \
-    }                                                               \
-    else if (spu->buf[ip] & HAVE_ARG)                               \
-    {                                                               \
-        ip++;                                                       \
-        CHECK_BUF_IP(ip)                                            \
-        code_argc                                                   \
-    }                                                               \
-    else                                                            \
-    {                                                               \
-        return ERR_ARGC;                                            \
-    }
-
-
 /**
  * The hlt command that stops the program.
 */
@@ -52,20 +17,8 @@ DEF_CMD("hlt", HLT, false,
 
 DEF_CMD("outc", OUTC, true,
     {
-        char *outc = (char *) calloc (spu->buf[++ip] + 1, sizeof (char));
-        my_assert (outc != NULL);
-
-        for (size_t i = 0; i < (size_t) spu->buf[ip]; i++)
-        {
-            *(outc + spu->buf[ip] - i - 1) = (int) POP(&spu->stack);
-        }
-
-        *(outc + spu->buf[ip]) = '\0';
-        
-        fprintf (spu->fp_print, "%s\n", outc);
-
-        free (outc);
-        outc = NULL;
+        print_text (spu, ip++);
+        CHECK_BUF_IP (ip)
     })
 
 /**
@@ -83,21 +36,16 @@ DEF_CMD("out", OUT, false,
 
 DEF_CMD("push", PUSH, true,
     {
-        GET_ARGUMENT (
-            {
-                PUSH (&spu->stack, spu->ram_value[(size_t) spu->reg_value[spu->buf[ip] - 1]]);
-                spu->ram_value[(size_t) spu->reg_value[(size_t) spu->buf[ip] - 1]] = 0;
-            },
-            {
-                PUSH (&spu->stack, spu->ram_value[spu->buf[ip]]);
-                spu->ram_value[(size_t) spu->buf[ip]] = 0;
-            },
-            {
-                PUSH (&spu->stack, spu->reg_value[spu->buf[ip] - 1]);
-            },
-            {
-                PUSH (&spu->stack, spu->buf[ip]);
-            })
+        ELEMENT *arg_pointer = get_argument (spu, ip);
+        ELEMENT arg = *arg_pointer;
+        PUSH (&spu->stack, arg);
+
+        if (spu->buf[ip++] & HAVE_RAM)
+        {
+            *arg_pointer = 0;
+        }
+
+        CHECK_BUF_IP (ip)
     })
 
 /**
@@ -106,19 +54,10 @@ DEF_CMD("push", PUSH, true,
 
 DEF_CMD("pop", POP, true,
     {
-        GET_ARGUMENT (
-            {
-                spu->ram_value[(size_t) spu->reg_value[(size_t) spu->buf[ip] - 1]] = POP (&spu->stack);
-            },
-            {
-                spu->ram_value[(size_t) spu->buf[ip]] = POP (&spu->stack);
-            },
-            {
-                spu->reg_value[(size_t) spu->buf[ip] - 1] = POP (&spu->stack);
-            },
-            {
-                return ERR_ARGC;
-            })
+        ELEMENT *arg_pointer = get_argument (spu, ip++);
+        *arg_pointer = POP (&spu->stack);
+
+        CHECK_BUF_IP (ip)
     })
 
 /**
@@ -229,6 +168,3 @@ DEF_CMD("draw", DRAW, false,
     {
         graph_video (spu->ram_value);
     })
-
-#undef GET_ARGUMENT
-#undef CHECK_RAM_IP

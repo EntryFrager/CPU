@@ -63,7 +63,7 @@ const size_t LABEL_CNT = 20;                                                    
 const int HAVE_RAM = 1 << 7;                                                                    ///< Code for a command interacting with RAM.
 const int HAVE_REG = 1 << 6;                                                                    ///< Code for a command that interacts with a register.
 const int HAVE_ARG = 1 << 5;                                                                    ///< Code for the command that interacts with the argument.
-const int HAVE_NOT_PARAM = -1;
+const int NO_ARGUMENT = -1;                                                                     ///< The value that the argument search function will return if there is none.
 
 const int VALUE_DEFAULT = -1;                                                                   ///< Default value of variables.
 
