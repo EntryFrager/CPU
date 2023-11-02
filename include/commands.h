@@ -1,5 +1,40 @@
 /// @file commands.h
 
+#define CHECK_RAM_IP(ram_ip) if (ram_ip > 99 || ram_ip < 0) return ERR_RAM;
+
+#define GET_ARGUMENT(code_ram_reg, code_ram, code_reg, code_argc)   \
+    if ((spu->buf[ip] & HAVE_RAM) && (spu->buf[ip] & HAVE_REG))     \
+    {                                                               \
+        ip++;                                                       \
+        CHECK_BUF_IP(ip)                                            \
+        CHECK_RAM_IP (spu->reg_value[spu->buf[ip]]);                \
+        code_ram_reg                                                \
+    }                                                               \
+    else if (spu->buf[ip] & HAVE_RAM)                               \
+    {                                                               \
+        ip++;                                                       \
+        CHECK_BUF_IP(ip)                                            \
+        CHECK_RAM_IP (spu->buf[ip]);                                \
+        code_ram                                                    \
+    }                                                               \
+    else if (spu->buf[ip] & HAVE_REG)                               \
+    {                                                               \
+        ip++;                                                       \
+        CHECK_BUF_IP(ip)                                            \
+        code_reg                                                    \
+    }                                                               \
+    else if (spu->buf[ip] & HAVE_ARG)                               \
+    {                                                               \
+        ip++;                                                       \
+        CHECK_BUF_IP(ip)                                            \
+        code_argc                                                   \
+    }                                                               \
+    else                                                            \
+    {                                                               \
+        return ERR_ARGC;                                            \
+    }
+
+
 /**
  * The hlt command that stops the program.
 */
@@ -11,21 +46,21 @@ DEF_CMD("hlt", HLT, false,
     })
 
 /**
- * This command prints characters whose acsii codes are stored on the stack.
+ * This function takes as input the number of characters that need to be displayed on the screen. 
+ * The ASCII codes of these characters must be added to the top of the stack in advance
 */
 
 DEF_CMD("outc", OUTC, true,
     {
-        ip++;
-        char *outc = (char *) calloc (*(spu->buf + ip) + 1, sizeof (char));
+        char *outc = (char *) calloc (spu->buf[++ip] + 1, sizeof (char));
         my_assert (outc != NULL);
 
-        for (size_t i = 0; i < (size_t) *(spu->buf + ip); i++)
+        for (size_t i = 0; i < (size_t) spu->buf[ip]; i++)
         {
-            *(outc + *(spu->buf + ip) - i - 1) = (int) DEF_POP(&spu->stack);
+            *(outc + spu->buf[ip] - i - 1) = (int) POP(&spu->stack);
         }
 
-        *(outc + *(spu->buf + ip)) = '\0';
+        *(outc + spu->buf[ip]) = '\0';
         
         fprintf (spu->fp_print, "%s\n", outc);
 
@@ -48,47 +83,21 @@ DEF_CMD("out", OUT, false,
 
 DEF_CMD("push", PUSH, true,
     {
-        if (*(spu->buf + ip) & HAVE_RAM)
-        {
-            if (*(spu->buf + ip) & HAVE_REG)
+        GET_ARGUMENT (
             {
-                ip++;
-                if (spu->reg_value[*(spu->buf + ip) - 1] > 99 || spu->reg_value[*(spu->buf + ip) - 1] < 0)
-                {
-                    return ERR_RAM;
-                }
-
-                DEF_PUSH (&spu->stack, spu->ram_value[(size_t) spu->reg_value[*(spu->buf + ip) - 1]]);
-
-                spu->ram_value[(size_t) spu->reg_value[*(spu->buf + ip) - 1]] = 0;
-            }
-            else
+                PUSH (&spu->stack, spu->ram_value[(size_t) spu->reg_value[spu->buf[ip] - 1]]);
+                spu->ram_value[(size_t) spu->reg_value[(size_t) spu->buf[ip] - 1]] = 0;
+            },
             {
-                ip++;
-                if (*(spu->buf + ip) > 99 || *(spu->buf + ip) < 0)
-                {
-                    return ERR_RAM;
-                }
-
-                DEF_PUSH (&spu->stack, spu->ram_value[*(spu->buf + ip)]);
-
-                spu->ram_value[*(spu->buf + ip)] = 0;
-            }
-        }
-        else if (*(spu->buf + ip) & HAVE_REG)
-        {
-            ip++;
-            DEF_PUSH (&spu->stack, spu->reg_value[*(spu->buf + ip) - 1]);
-        }
-        else if (*(spu->buf + ip) & HAVE_ARG)
-        {
-            ip++;
-            DEF_PUSH (&spu->stack, *(spu->buf + ip));
-        }
-        else
-        {
-            return ERR_ARGC;
-        }
+                PUSH (&spu->stack, spu->ram_value[spu->buf[ip]]);
+                spu->ram_value[(size_t) spu->buf[ip]] = 0;
+            },
+            {
+                PUSH (&spu->stack, spu->reg_value[spu->buf[ip] - 1]);
+            },
+            {
+                PUSH (&spu->stack, spu->buf[ip]);
+            })
     })
 
 /**
@@ -97,38 +106,19 @@ DEF_CMD("push", PUSH, true,
 
 DEF_CMD("pop", POP, true,
     {
-        if (*(spu->buf + ip) & HAVE_RAM)
-        {
-            if (*(spu->buf + ip) & HAVE_REG)
+        GET_ARGUMENT (
             {
-                ip++;
-                if (spu->reg_value[*(spu->buf + ip) - 1] > 99 || spu->reg_value[*(spu->buf + ip) - 1] < 0)
-                {
-                    return ERR_RAM;
-                }
-
-                spu->ram_value[(size_t) spu->reg_value[*(spu->buf + ip) - 1]] = DEF_POP (&spu->stack);
-            }
-            else
+                spu->ram_value[(size_t) spu->reg_value[(size_t) spu->buf[ip] - 1]] = POP (&spu->stack);
+            },
             {
-                ip++;
-                if (*(spu->buf + ip) > 99 || *(spu->buf + ip) < 0)
-                {
-                    return ERR_RAM;
-                }
-
-                spu->ram_value[(size_t) *(spu->buf + ip)] = DEF_POP (&spu->stack);
-            }
-        }
-        else if (*(spu->buf + ip) & HAVE_REG)
-        {
-            ip++;
-            spu->reg_value[*(spu->buf + ip) - 1] = DEF_POP (&spu->stack);
-        }
-        else
-        {
-            return ERR_ARGC;
-        }
+                spu->ram_value[(size_t) spu->buf[ip]] = POP (&spu->stack);
+            },
+            {
+                spu->reg_value[(size_t) spu->buf[ip] - 1] = POP (&spu->stack);
+            },
+            {
+                return ERR_ARGC;
+            })
     })
 
 /**
@@ -137,10 +127,10 @@ DEF_CMD("pop", POP, true,
 
 DEF_CMD("add", ADD, false,
     {
-        a = DEF_POP (&spu->stack);
-        b = DEF_POP (&spu->stack);
+        a = POP (&spu->stack);
+        b = POP (&spu->stack);
 
-        DEF_PUSH (&spu->stack, a + b);
+        PUSH (&spu->stack, a + b);
     })
 
 /**
@@ -149,10 +139,10 @@ DEF_CMD("add", ADD, false,
 
 DEF_CMD("sub", SUB, false,
     {
-        a = DEF_POP (&spu->stack);
-        b = DEF_POP (&spu->stack);
+        a = POP (&spu->stack);
+        b = POP (&spu->stack);
 
-        DEF_PUSH (&spu->stack, b - a);
+        PUSH (&spu->stack, b - a);
     })
 
 /**
@@ -161,10 +151,10 @@ DEF_CMD("sub", SUB, false,
 
 DEF_CMD("mul", MUL, false,
     {
-        a = DEF_POP (&spu->stack);
-        b = DEF_POP (&spu->stack);
+        a = POP (&spu->stack);
+        b = POP (&spu->stack);
 
-        DEF_PUSH (&spu->stack, a * b);
+        PUSH (&spu->stack, a * b);
     })
 
 /**
@@ -173,10 +163,10 @@ DEF_CMD("mul", MUL, false,
 
 DEF_CMD("div", DIV, false,
     {
-        a = DEF_POP (&spu->stack);
-        b = DEF_POP (&spu->stack);
+        a = POP (&spu->stack);
+        b = POP (&spu->stack);
 
-        DEF_PUSH (&spu->stack, b / a);
+        PUSH (&spu->stack, b / a);
     })
 
 /**
@@ -185,7 +175,7 @@ DEF_CMD("div", DIV, false,
 
 DEF_CMD("sin", SIN, false,
     {
-        DEF_PUSH (&spu->stack, (ELEMENT) sin (DEF_POP (&spu->stack)));
+        PUSH (&spu->stack, (ELEMENT) sin (POP (&spu->stack)));
     })
 
 /**
@@ -194,7 +184,7 @@ DEF_CMD("sin", SIN, false,
 
 DEF_CMD("cos", COS, false,
     {
-        DEF_PUSH (&spu->stack, (ELEMENT) cos (DEF_POP (&spu->stack)));
+        PUSH (&spu->stack, (ELEMENT) cos (POP (&spu->stack)));
     })
 
 /**
@@ -203,7 +193,7 @@ DEF_CMD("cos", COS, false,
 
 DEF_CMD("sqrt", SQRT, false,
     {
-        DEF_PUSH (&spu->stack, (ELEMENT) sqrt (DEF_POP (&spu->stack)));
+        PUSH (&spu->stack, (ELEMENT) sqrt (POP (&spu->stack)));
     })
 
 /**
@@ -219,7 +209,16 @@ DEF_CMD("in", IN, false,
             return ERR_INPUT_ARG;
         }
 
-        DEF_PUSH (&spu->stack, (ELEMENT) value);
+        PUSH (&spu->stack, (ELEMENT) value);
+    })
+
+/**
+ * Return command to label call command.
+*/
+
+DEF_CMD("ret", RET, false,
+    {
+        ip = (size_t) POP (&spu->stack_call);
     })
 
 /**
@@ -230,3 +229,6 @@ DEF_CMD("draw", DRAW, false,
     {
         graph_video (spu->ram_value);
     })
+
+#undef GET_ARGUMENT
+#undef CHECK_RAM_IP

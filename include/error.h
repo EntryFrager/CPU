@@ -13,7 +13,7 @@
         abort (); \
     }
 
-const int ERROR_CNT = 10;                       ///< Number of possible errors provided by the author.
+const int ERROR_CNT = 11;                       ///< Number of possible errors provided by the author.
 
 enum code_error {                               ///< Error codes.
     ERR_NO,                                     ///< No error.
@@ -25,7 +25,8 @@ enum code_error {                               ///< Error codes.
     ERR_RAM,                                    ///< Error when reading an argument associated with RAM.
     ERR_REG,                                    ///< Error reading register.
     ERR_COMMAND,                                ///< Error reading command.
-    ERR_INPUT_ARG                               ///< Invalid argument entered from stream input.
+    ERR_INPUT_ARG,                              ///< Invalid argument entered from stream input.
+    ERR_BUF_IP,                                 ///< Buffer out of bounds committed.
 };
 
 const char* my_strerr (unsigned code_error);    ///< Error return function.

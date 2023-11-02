@@ -23,6 +23,7 @@ static const char* err_msgs_arr[] = {
     "ERROR: Invalid case entered.\n",
     "ERROR: invalid command entered.\n",
     "ERROR: incorrectly entered argument from stream input.\n",
+    "ERROR: buffer out of bounds committed.\n",
 };
 
 /**

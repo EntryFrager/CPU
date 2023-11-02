@@ -19,6 +19,8 @@
     #define CHECK_ERROR(...)
 #endif
 
+#define CHECK_BUF_IP(buf_ip) if (buf_ip < 0 || buf_ip > spu->size_file) return ERR_BUF_IP;
+
 enum COMMANDS_CODE {                                                                        ///< All command codes.
     HLT,                                                                                    ///< The hlt command that stops the program.
     OUT,                                                                                    ///< The command that prints the response.
@@ -77,12 +79,8 @@ typedef struct {                                                                
     STACK stack_call = {};                                                                  ///< Stack storing function call locations.
 } SPU;
 
-int spu_ctor (SPU *spu);                                                                    ///< Function to initialize the spu structure.
-
 int input_text (SPU *spu);                                                                  ///< A function that reads text from a file into a buffer.
 
 size_t get_file_size (FILE *stream);                                                        ///< Function returning file size.
-
-int spu_dtor (SPU *spu);                                                                    ///< Function that clears all variables.
 
 #endif //FUNC_H

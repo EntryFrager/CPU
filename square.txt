@@ -24,7 +24,7 @@ call_solve_square:
     ret
 
 
-infinite_solutions:
+check_infinity_or_no_solutions:
     push rcx
     push 0
     jne call_print_no_solve
@@ -43,12 +43,12 @@ call_print_infinity_solutions:
 solve_linear:
     push 0
     push rbx
-    je call_infinite_solutions
+    je call_check_infinity_or_no_solutions
     jne call_print_one_solutions
     ret
 
-call_infinite_solutions:
-    call infinite_solutions
+call_check_infinity_or_no_solutions:
+    call check_infinity_or_no_solutions
     ret
 
 call_print_one_solutions:

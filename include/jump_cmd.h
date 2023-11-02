@@ -1,14 +1,12 @@
 /// @file jump_cmd.h
 
 #define jump_condition(expr)                                                                            \
+    ip++;                                                                                               \
+    CHECK_BUF_IP (ip)                                                                                   \
     if (spu->stack.data[spu->stack.position - 1] expr spu->stack.data[spu->stack.position - 2])         \
     {                                                                                                   \
-        ip = (size_t) *(spu->buf + ip + 1) - 1;                                                         \
+        ip = (size_t) spu->buf[ip] - 1;                                                                 \
     }                                                                                                   \
-    else                                                                                                \
-    {                                                                                                   \
-        ip++;                                                                                           \
-    }
 
 /**
  * Call command that preserves the previous position.
@@ -16,17 +14,10 @@
 
 DEF_CMD("call", CALL, true,
     {
-        DEF_PUSH (&spu->stack_call, ip + 1);
-        ip = (size_t) *(spu->buf + ip + 1) - 1;
-    })
-
-/**
- * Return command to label call command.
-*/
-
-DEF_CMD("ret", RET, false,
-    {
-        ip = (size_t) DEF_POP (&spu->stack_call);
+        ip++;
+        CHECK_BUF_IP (ip)
+        PUSH (&spu->stack_call, ip);
+        ip = (size_t) spu->buf[ip] - 1;
     })
 
 /**
@@ -35,7 +26,9 @@ DEF_CMD("ret", RET, false,
 
 DEF_CMD("jmp", JMP, true,
     {
-        ip = (size_t) *(spu->buf + ip + 1) - 1;
+        ip++;
+        CHECK_BUF_IP (ip)
+        ip = (size_t) spu->buf[ip] - 1;
     })
 
 /**
@@ -91,3 +84,5 @@ DEF_CMD("jne", JNE, true,
     {
         jump_condition (!=);
     })
+
+#undef jump_condition
