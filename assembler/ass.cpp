@@ -197,7 +197,7 @@ int pars_command (SPU *spu)
     {
         if (spu->n_label <= LABEL_CNT)
         {
-            if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) == ':')
+            if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) == ':' && (spu->buf_output == NULL))
             {
                 process_label (spu, ip, counter_ip);
             }

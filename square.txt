@@ -4,55 +4,55 @@ in
 pop rcx
 pop rbx
 pop rax
-call solve_dispetcher
+call solve_dispetcher                                       ;Вызываем функцию, которая определяет вид уравнения (линейное или квадратное).
 hlt
 
 
-solve_dispetcher:
+solve_dispetcher:                                           ;Функция, определяющая вид уравнения
     push 0
     push rax
-    je call_solve_linear
-    jne call_solve_square
+    je call_solve_linear                                    ;Если rax  = 0, то прыгаем на вызов функции линейного уравнения.
+    jne call_solve_square                                   ;Если rax != 0, то прыгаем на вызов функции квадратного уравнения.
     ret
 
 call_solve_linear:
-    call solve_linear
+    call solve_linear                                       ;Вызов функции линейного уравнения.
     ret
 
 call_solve_square:
-    call solve_square
+    call solve_square                                       ;Вызов функции квадратного уравнения.
     ret
 
 
-check_infinity_or_no_solutions:
+check_infinity_or_no_solutions:                             ;Функция, определяющая, бесконечно количество корней у уравнение или их не существует.
     push rcx
     push 0
-    jne call_print_no_solve
-    je call_print_infinity_solutions
+    jne call_print_no_solve                                 ;Если rcx != 0, то прыгаем на вызов функции вывода в консоль сообщения, что корней нет.
+    je call_print_infinity_solutions                        ;Если rcx  = 0, то прыгаем на вызов функции вывода в консоль сообщения, что корней бесконечно.
     ret
 
 call_print_no_solve:
-    call print_no_solve
+    call print_no_solve                                     ;Вызываем функцию, которая выводит сообщение, что корней нет.
     ret
 
 call_print_infinity_solutions:
-    call print_infinity_solutions
+    call print_infinity_solutions                           ;Вызываем функцию, которая выводит сообщение, что корней бесконечное количество.
     ret
 
 
-solve_linear:
+solve_linear:                                               ;Функция решения линейного уравнения.
     push 0
     push rbx
-    je call_check_infinity_or_no_solutions
-    jne call_print_one_solutions
+    je call_check_infinity_or_no_solutions                  ;Если rbx  = 0, то прыгаем на вызов функции проверки, есть ли у уравнения корни, или их бесконечное количество. 
+    jne call_print_one_solutions                            ;Если rbx != 0, то прыгаем на решение линейного уравнения.
     ret
 
 call_check_infinity_or_no_solutions:
-    call check_infinity_or_no_solutions
+    call check_infinity_or_no_solutions                     ;Вызываем функцию проверки, есть ли у уравнения корни, или их бесконечное количество. 
     ret
 
 call_print_one_solutions:
-    call print_one_solutions
+    call print_one_solutions                                ;Вызываем функцию вывода, что у уравнения один корень.
     push -1
     push rcx
     mul
@@ -62,18 +62,18 @@ call_print_one_solutions:
     ret
 
 
-solve_square:
-    call discr
+solve_square:                                               ;Функция, решающая квадратное уравнение.
+    call discr                                              ;Вызываем функцию подсчета дискриминанта.
     push 0
     push rdx
-    je call_discr_null
-    jb call_print_no_solve
+    je call_discr_null                                      ;Если rdx == 0, то прыгаем на вызов функции, для решения квадратного уравнения в данном случае.
+    jb call_print_no_solve                                  ;Если rdx  < 0, то прыгаем на вызов функции, которая выводит сообщение, что корней нет.
 
     push rdx
     sqrt
     pop rdx
 
-    call print_two_solutions
+    call print_two_solutions                                ;Вызываем функцию вывода в файл сообщения, что уравнение имеет два корня.
 
     push -1
     push rbx
@@ -84,7 +84,7 @@ solve_square:
     push rax
     mul
     div
-    out
+    out                                                     ;Выводим первый корень.
 
     push -1
     push rbx
@@ -95,20 +95,20 @@ solve_square:
     push rax
     mul
     div
-    out
+    out                                                     ;Выводим второй корень.
     ret
 
 call_discr_null:
-    CALL discr_null
+    CALL discr_null                                         ;Вызываем функцию подсчета корня, если дискриминант равен 0.
     ret
 
 call_print_no_solve:
-    call print_no_solve
+    call print_no_solve                                     ;Вызываем функцию вывода сообщения, что уравнение не имеет корней.
     ret
 
 
-discr_null:
-    call print_one_solutions
+discr_null:                                                 ;Функция подсчета корня, если дискриминант равен 0.
+    call print_one_solutions                                ;Вызываем функцию вывода сообщения, что уравнение имеет один корень.
 
     push -1
     push rbx
@@ -117,11 +117,11 @@ discr_null:
     push rax
     mul
     div
-    out
+    out                                                     ;Выводим корень.
     ret
 
 
-discr:
+discr:                                                      ;Функция подсчета дискриминанта.
     push rbx
     push rbx
     mul
@@ -131,11 +131,11 @@ discr:
     mul
     mul
     sub
-    pop rdx
+    pop rdx                                                 ;В rdx записываем значение дискриминанта.
     ret
 
 
-print_no_solve:
+print_no_solve:                                             ;Функция вывода в файл сообщения, что уравнение не имеет корней.
     push 78
     push 111
     push 32
@@ -152,7 +152,7 @@ print_no_solve:
     ret
 
 
-print_one_solutions:
+print_one_solutions:                                        ;Функция вывода в файл сообщения, что уравнение имеет один корень.
     push 79
     push 110
     push 101
@@ -170,7 +170,7 @@ print_one_solutions:
     ret
 
 
-print_two_solutions:
+print_two_solutions:                                        ;Функция вывода в файл сообщения, что уравнение имеет два корня.
     push 84
     push 119
     push 111
@@ -188,7 +188,7 @@ print_two_solutions:
     ret
 
 
-print_infinity_solutions:
+print_infinity_solutions:                                   ;Функция вывода в файл сообщения, что корней бесконечное количество.
     push 73
     push 110
     push 102
