@@ -16,10 +16,7 @@ int main (int argc, char *argv[])
     code_error = input_text (&spu);
     CHECK_ERROR_PRINT (code_error)
 
-    code_error = pars_command (&spu, 1);
-    CHECK_ERROR_PRINT (code_error)
-
-    code_error = pars_command (&spu, 2);
+    code_error = code_compilation (&spu);
     CHECK_ERROR_PRINT (code_error)
 
     code_error = spu_dtor (&spu);

@@ -16,7 +16,7 @@ int main ()
 
     CHECK_ERROR (code_error)
 
-    code_error = spu_ran (&spu);
+    code_error = spu_run (&spu);
 
     CHECK_ERROR (code_error)
 

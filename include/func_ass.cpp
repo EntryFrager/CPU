@@ -27,6 +27,9 @@ int spu_ctor (SPU *spu, int argc, char **argv)
         return ERR_FOPEN;
     }
 
+    spu->label = (LABELS *) calloc (LABEL_CNT, sizeof (LABELS));
+    my_assert (spu->label != NULL);
+
     return ERR_NO;
 }
 

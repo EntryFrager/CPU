@@ -36,13 +36,8 @@ DEF_CMD("out", OUT, false,
 
 DEF_CMD("push", PUSH, true,
     {
-        ELEMENT *arg_pointer = get_argument (spu, ip);
+        ELEMENT *arg_pointer = get_argument (spu, ip++);
         PUSH (&spu->stack, *arg_pointer);
-
-        if (spu->buf[ip++] & HAVE_RAM)
-        {
-            *arg_pointer = 0;
-        }
 
         CHECK_BUF_IP (ip)
     })

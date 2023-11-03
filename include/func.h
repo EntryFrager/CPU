@@ -52,7 +52,9 @@ const size_t REG_CNT = 4;                                                       
 
 const size_t LABEL_CNT = 20;                                                                ///< Maximum number of tags.
 
-const size_t SIZE_RAM = 441;                                                                ///< RAM size.
+const size_t SIZE_RAM = 400;                                                                ///< RAM size.
+
+const size_t ZERO_PTR = 0;                                                                  ///< Null pointer.
 
 const int VALUE_DEFAULT = 0;                                                                ///< Default value of variables.
 

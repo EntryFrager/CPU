@@ -130,6 +130,41 @@ void clean_comment (SPU *spu)
     }
 }
 
+/**
+ * Compiling the code and outputting it to a binary file
+ * @param[in] spu Structure containing all information
+ * @param[out] code_error Returns the error code
+*/
+
+int code_compilation (SPU *spu)
+{
+    int code_error = 0;
+
+    code_error = pars_command (spu);
+    CHECK_ERROR_RETURN (code_error)
+
+    spu->n_words -= spu->n_label;
+
+    spu->buf_output = (int *) calloc (sizeof (int), spu->n_words);
+    my_assert (spu->buf_output != NULL);
+
+    code_error = pars_command (spu);
+    CHECK_ERROR_RETURN (code_error)
+
+    fwrite (spu->buf_output, sizeof (int), spu->n_words, spu->fp_print_bin);
+
+    print_listing (spu);
+
+    return ERR_NO;
+}
+
+/**
+ * Macro used for code generation.
+ * @param[in] name Command name
+ * @param[in] num Command number
+ * @param[in] have_arg Variable responsible for the presence of an argument to the command, 1 if there is one, 0 if not.
+*/
+
 #define DEF_CMD(name, num, have_arg, ...)                                               \
     if (strncasecmp (spu->cmd[ip].command, name, sizeof (name) - 1) == 0)               \
     {                                                                                   \
@@ -149,26 +184,11 @@ void clean_comment (SPU *spu)
  * @param[out] code_error Returns the error code
 */
 
-int pars_command (SPU *spu, size_t n_compile)
+int pars_command (SPU *spu)
 {
     my_assert (spu != NULL);
 
     int code_error = 0;
-
-    if (n_compile == 1)
-    {
-        spu->label = (LABELS *) calloc (LABEL_CNT, sizeof (LABELS));
-        my_assert (spu->label != NULL);
-    }
-    else if (n_compile == 2)
-    {
-        spu->buf_output = (int *) calloc (sizeof (int), spu->n_words);
-        my_assert (spu->buf_output != NULL);
-
-        fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+\n");
-        fprintf (spu->fp_print_txt, "|  NAME_CMD  |  HEX_SPEAK |  VALUE_ARG |  VALUE_REG |\n");
-        fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+\n");
-    }    
 
     size_t counter_buf = 0;
     size_t counter_ip  = 0;
@@ -177,7 +197,7 @@ int pars_command (SPU *spu, size_t n_compile)
     {
         if (spu->n_label <= LABEL_CNT)
         {
-            if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) == ':' && n_compile == 1)
+            if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) == ':')
             {
                 process_label (spu, ip, counter_ip);
             }
@@ -190,11 +210,8 @@ int pars_command (SPU *spu, size_t n_compile)
                     return ERR_COMMAND;
                 }
 
-                if (n_compile == 2)
+                if (spu->buf_output != NULL)
                 {
-                    fprintf (spu->fp_print_txt, "|%12s|%12x|%12d|%12d|\n", spu->cmd[ip].command, spu->cmd[ip].cmd_code, spu->cmd[ip].argc, spu->cmd[ip].reg);
-                    fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+\n");
-
                     counter_buf = write_buf (&spu->cmd[ip], spu->buf_output, counter_buf);
                 }
             }
@@ -207,21 +224,10 @@ int pars_command (SPU *spu, size_t n_compile)
         counter_ip++;
     }
 
-    if (n_compile == 1)
-    {
-        spu->n_words -= spu->n_label;
-    }
-    else if (n_compile == 2)
-    {
-        fwrite (spu->buf_output, sizeof (int), spu->n_words, spu->fp_print_bin);
-    }
-
     return ERR_NO;
 }
 
 #undef DEF_CMD
-
-
 
 /**
  * A function that writes the converted command to the buffer.
@@ -436,4 +442,27 @@ static int find_process_label (SPU *spu, size_t ip, size_t cmd_len, size_t len)
     }
 
     return ERR_LABEL;
+}
+
+/**
+ * Function for outputting general information about commands to a file
+ * @param[in] spu Structure containing all information
+*/
+
+void print_listing (SPU *spu)
+{
+    my_assert (spu != NULL);
+
+    fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+\n");
+    fprintf (spu->fp_print_txt, "|  NAME_CMD  |  HEX_SPEAK |  VALUE_ARG |  VALUE_REG |\n");
+    fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+\n");
+
+    for (size_t ip = 0; ip < spu->n_cmd; ip++)
+    {
+        if (*(spu->cmd[ip].command + spu->cmd[ip].size_str - 1) != ':')
+        {
+            fprintf (spu->fp_print_txt, "|%12s|%12x|%12d|%12d|\n", spu->cmd[ip].command, spu->cmd[ip].cmd_code, spu->cmd[ip].argc, spu->cmd[ip].reg);
+            fprintf (spu->fp_print_txt, "+------------+------------+------------+------------+\n");
+        }
+    }
 }

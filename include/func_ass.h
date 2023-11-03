@@ -14,7 +14,12 @@
 #define DEBUG                                                                                   ///< Macro for program debugging.
 
 #ifdef DEBUG
-    #define CHECK_ERROR_PRINT(code_error) if (code_error != ERR_NO) fprintf (stderr, "%s", my_strerr (code_error));
+    #define CHECK_ERROR_PRINT(code_error)                       \
+        if (code_error != ERR_NO)                               \
+        {                                                       \
+            fprintf (stderr, "%s", my_strerr (code_error));     \
+            abort ();                                           \
+        }
 #else
     #define CHECK_ERROR_PRINT(...)
 #endif

@@ -6,9 +6,9 @@
 
 #define POP(stack_name) stack_pop (stack_name)                                                                          ///< Macro that removes an element from the stack.
 
-#define CHECK_RAM_IP(ram_ip) if (ram_ip > 99 || ram_ip < 0) return ERR_RAM;                                             ///< Checking that the ip of the RAM has not gone beyond the limits.
+#define CHECK_RAM_IP(ptr) if (ptr > (SIZE_RAM - 1) || ptr < ZERO_PTR) return ERR_RAM;                                   ///< Checking that the ip of the RAM has not gone beyond the limits.
 
-#define CHECK_BUF_IP(buf_ip) if (buf_ip < 0 || buf_ip > spu->size_file) return ERR_BUF_IP;                              ///< Checks that the buffer IP has not exceeded its limits.
+#define CHECK_BUF_IP(ptr) if (ptr < ZERO_PTR || ptr > spu->size_file) return ERR_BUF_IP;                                ///< Checks that the buffer IP has not exceeded its limits.
 
 /**
  * Function to initialize the spu structure.
@@ -64,13 +64,13 @@ int spu_ctor (SPU *spu)
  * @param[out] code_error Returns the error code
 */
 
-int spu_ran (SPU *spu)
+int spu_run (SPU *spu)
 {
     my_assert (spu != NULL);
 
     fprintf (spu->fp_print, "This is a program that implements the functions of the processor.\n");
 
-    for (size_t ip = 0; ip <= spu->size_file; ip++)
+    for (size_t ip = 0; ip < spu->size_file; ip++)
     {
         ELEMENT first_arg  = VALUE_DEFAULT;
         ELEMENT second_arg = VALUE_DEFAULT;
@@ -155,7 +155,7 @@ void graph_video (ELEMENT *ram)
 
     for (size_t ram_pos = 0; ram_pos < SIZE_RAM; ram_pos++)
     {
-        if (ram_pos % 21 != 0)
+        if (ram_pos % 20 != 0)
         {
             if (ram[ram_pos] == 0)
             {
@@ -171,8 +171,6 @@ void graph_video (ELEMENT *ram)
             printf ("\n");
         }
     }
-
-    printf ("\n");
 }
 
 /**

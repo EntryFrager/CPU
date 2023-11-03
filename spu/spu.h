@@ -7,7 +7,7 @@
 
 int spu_ctor (SPU *spu);                                                                ///< Function to initialize the spu structure.
 
-int spu_ran (SPU *spu);                                                                 ///< A function that performs all calculations and outputs them to a file.
+int spu_run (SPU *spu);                                                                 ///< A function that performs all calculations and outputs them to a file.
 
 ELEMENT* get_argument (SPU *spu, size_t ip);                                            ///< A function that returns the address of a variable whose value is needed.
 
