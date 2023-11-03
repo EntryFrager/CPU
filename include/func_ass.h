@@ -39,6 +39,7 @@ enum COMMANDS_CODE {                                                            
     JBE,                                                                                        ///< Jump command if the last number written to the stack is less than or equal to the second to last number written to the stack.
     JE,                                                                                         ///< Jump command if the last number written to the stack is equal to the second to last number written to the stack.
     JNE,                                                                                        ///< Jump command if the last number written to the stack is not equal to the second to last number written to the stack.
+    JFR,                                                                                        ///< Jump team that only jumps on Friday.
     OUTC,                                                                                       ///< A command that prints characters to a file by their ASCII codes from the stack.
     ADD,                                                                                        ///< Addition command.
     SUB,                                                                                        ///< Subtraction command.
@@ -49,6 +50,7 @@ enum COMMANDS_CODE {                                                            
     COS,                                                                                        ///< Root command.
     IN,                                                                                         ///< A command that allows the user to enter a number using an input device.
     DRAW,                                                                                       ///< Command that starts graphics memory.
+    INT,                                                                                        ///< A command that makes the last number pushed on to the stack an integer.
 };
 
 enum REG {                                                                                      ///< Register codes.

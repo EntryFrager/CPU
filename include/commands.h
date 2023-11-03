@@ -17,7 +17,7 @@ DEF_CMD("hlt", HLT, false,
 
 DEF_CMD("outc", OUTC, true,
     {
-        print_text (spu, ip++);
+        print_text   (spu, ip++);
         CHECK_BUF_IP (ip)
     })
 
@@ -37,8 +37,7 @@ DEF_CMD("out", OUT, false,
 DEF_CMD("push", PUSH, true,
     {
         ELEMENT *arg_pointer = get_argument (spu, ip);
-        ELEMENT arg = *arg_pointer;
-        PUSH (&spu->stack, arg);
+        PUSH (&spu->stack, *arg_pointer);
 
         if (spu->buf[ip++] & HAVE_RAM)
         {
@@ -66,10 +65,10 @@ DEF_CMD("pop", POP, true,
 
 DEF_CMD("add", ADD, false,
     {
-        a = POP (&spu->stack);
-        b = POP (&spu->stack);
+        first_arg  = POP (&spu->stack);
+        second_arg = POP (&spu->stack);
 
-        PUSH (&spu->stack, a + b);
+        PUSH (&spu->stack, first_arg + second_arg);
     })
 
 /**
@@ -78,10 +77,10 @@ DEF_CMD("add", ADD, false,
 
 DEF_CMD("sub", SUB, false,
     {
-        a = POP (&spu->stack);
-        b = POP (&spu->stack);
+        first_arg  = POP (&spu->stack);
+        second_arg = POP (&spu->stack);
 
-        PUSH (&spu->stack, b - a);
+        PUSH (&spu->stack, second_arg - first_arg);
     })
 
 /**
@@ -90,10 +89,10 @@ DEF_CMD("sub", SUB, false,
 
 DEF_CMD("mul", MUL, false,
     {
-        a = POP (&spu->stack);
-        b = POP (&spu->stack);
+        first_arg  = POP (&spu->stack);
+        second_arg = POP (&spu->stack);
 
-        PUSH (&spu->stack, a * b);
+        PUSH (&spu->stack, first_arg * second_arg);
     })
 
 /**
@@ -102,10 +101,10 @@ DEF_CMD("mul", MUL, false,
 
 DEF_CMD("div", DIV, false,
     {
-        a = POP (&spu->stack);
-        b = POP (&spu->stack);
+        first_arg  = POP (&spu->stack);
+        second_arg = POP (&spu->stack);
 
-        PUSH (&spu->stack, b / a);
+        PUSH (&spu->stack, second_arg / first_arg);
     })
 
 /**
@@ -133,6 +132,16 @@ DEF_CMD("cos", COS, false,
 DEF_CMD("sqrt", SQRT, false,
     {
         PUSH (&spu->stack, (ELEMENT) sqrt (POP (&spu->stack)));
+    })
+
+/**
+ * A command that makes the last number pushed on to the stack an integer.
+*/
+
+DEF_CMD("int", INT, false, 
+    {
+        int a = (int) POP (&spu->stack);
+        PUSH (&spu->stack, (ELEMENT) a);
     })
 
 /**

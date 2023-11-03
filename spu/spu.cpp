@@ -6,9 +6,9 @@
 
 #define POP(stack_name) stack_pop (stack_name)                                                                          ///< Macro that removes an element from the stack.
 
-#define CHECK_RAM_IP(ram_ip) if (ram_ip > 99 || ram_ip < 0) return ERR_RAM;
+#define CHECK_RAM_IP(ram_ip) if (ram_ip > 99 || ram_ip < 0) return ERR_RAM;                                             ///< Checking that the ip of the RAM has not gone beyond the limits.
 
-#define CHECK_BUF_IP(buf_ip) if (buf_ip < 0 || buf_ip > spu->size_file) return ERR_BUF_IP;
+#define CHECK_BUF_IP(buf_ip) if (buf_ip < 0 || buf_ip > spu->size_file) return ERR_BUF_IP;                              ///< Checks that the buffer IP has not exceeded its limits.
 
 /**
  * Function to initialize the spu structure.
@@ -72,8 +72,8 @@ int spu_ran (SPU *spu)
 
     for (size_t ip = 0; ip <= spu->size_file; ip++)
     {
-        ELEMENT a = VALUE_DEFAULT;
-        ELEMENT b = VALUE_DEFAULT;
+        ELEMENT first_arg  = VALUE_DEFAULT;
+        ELEMENT second_arg = VALUE_DEFAULT;
 
         switch (spu->buf[ip] & 0x1F)
         {
@@ -155,7 +155,7 @@ void graph_video (ELEMENT *ram)
 
     for (size_t ram_pos = 0; ram_pos < SIZE_RAM; ram_pos++)
     {
-        if (ram_pos % 20 != 0)
+        if (ram_pos % 21 != 0)
         {
             if (ram[ram_pos] == 0)
             {

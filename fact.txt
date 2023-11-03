@@ -1,38 +1,38 @@
-in
-pop rdx
-push 0
-push rdx
-ja go
-hlt
+jmp main
 
+main:
+    in
+    pop rdx
+    push 0
+    push rdx
+    jae gofact          ;если введенное значение меньше 0, то не прыгаем и завершаем программу
+    hlt
 
-go:
-push 1
-pop rbx
-push 1
-call factorial
-push rax
-out
-hlt
-
+gofact:         
+    push 1
+    pop rax
+    CALL factorial      ;вызываем функцию подсчета факториала
+    push rax
+    out
+    hlt
 
 factorial:
-    push rbx
+    push rax
+    push rdx
     mul
     pop rax
-    push rax
 
-    push rbx
-    push 1
-    add
-    pop rbx
-
-    push rbx
     push rdx
-    jb return
+    push 1
+    sub
     pop rdx
-    pop rbx
+
+    push 0
+    push rdx
+    je return
+    pop rdx
     call factorial
+
 
 return:
     ret

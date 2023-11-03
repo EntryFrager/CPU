@@ -1,0 +1,80 @@
+push 10
+pop rax
+push 10
+pop rbx
+push 10
+pop rcx
+push 0
+pop rdx
+
+call start
+hlt
+
+start:
+    call circle
+
+    push 44
+    push 7
+    div
+    push rdx
+    jb start
+
+    draw
+    ret
+
+circle:
+    call get_x
+    call get_y
+
+    push rbx
+    out
+    push 21
+    mul
+    push rax
+    out
+    add
+    pop rax
+    push 1
+    pop [rax]
+
+    push 10
+    pop rax
+    push 10
+    pop rbx
+
+    push 44
+    push 7
+    div
+    push 42
+    div
+    push rdx
+    add
+    pop rdx
+
+    ret
+
+get_x:
+    push rdx
+    cos
+    push rcx
+    mul
+    push rax
+    add
+    pop rax
+    push rax
+    int
+    pop rax
+    ret
+
+get_y:
+    push rdx
+    sin
+    push rcx
+    mul
+    push rbx
+    add
+    pop rbx
+    push rbx
+    int
+    pop rbx
+    ret
