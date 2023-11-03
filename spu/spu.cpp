@@ -8,7 +8,7 @@
 
 #define CHECK_RAM_IP(ptr) if (ptr > (SIZE_RAM - 1) || ptr < ZERO_PTR) return ERR_RAM;                                   ///< Checking that the ip of the RAM has not gone beyond the limits.
 
-#define CHECK_BUF_IP(ptr) if (ptr < ZERO_PTR || ptr > spu->size_file) return ERR_BUF_IP;                                ///< Checks that the buffer IP has not exceeded its limits.
+#define CHECK_BUF_IP(ptr) if (ptr > spu->size_file) return ERR_BUF_IP;                                ///< Checks that the buffer IP has not exceeded its limits.
 
 /**
  * Function to initialize the spu structure.
@@ -118,6 +118,8 @@ ELEMENT* get_argument (SPU *spu, size_t ip)
         ELEMENT a = (ELEMENT) spu->buf[++ip];
         return &a;
     }
+
+    return NULL;
 }
 
 /**
@@ -133,7 +135,7 @@ void print_text (SPU *spu, size_t ip)
 
     for (size_t i = 0; i < (size_t) spu->buf[ip]; i++)
     {
-        *(outc + spu->buf[ip] - i - 1) = (int) POP(&spu->stack);
+        *(outc + spu->buf[ip] - i - 1) = (char) ((int) POP(&spu->stack));
     }
 
     *(outc + spu->buf[ip]) = '\0';
