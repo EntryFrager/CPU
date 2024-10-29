@@ -1,46 +1,33 @@
-/// @file func_ass.cpp
+#ifndef FUNC_ASS_CPP
+#define FUNC_ASS_CPP
 
 #include "func_ass.h"
 
-/**
- * Function that counts the number of commands.
- * @param[in] spu Structure containing all information
- * @param[out] code_error Returns the error code
-*/
-
-int spu_ctor (SPU *spu, int argc, char **argv)
+void spu_ctor (Spu *spu, int argc, char **argv, int *code_error)
 {
-    my_assert (spu != NULL);
+    my_assert (spu != NULL, ERR_PTR);
 
     if (argc == 2)
     {
         spu->file_name_input = (const char *) argv[1];
     }
-    spu->file_name_print_bin = "..\\ass_output.bin";
-    spu->file_name_print_txt = "..\\ass_output.log";
-
-    spu->fp_print_bin = fopen (spu->file_name_print_bin, "w + b");
-    spu->fp_print_txt = fopen (spu->file_name_print_txt, "w");
-
-    if (spu->fp_print_bin == NULL || spu->fp_print_txt == NULL)
+    else
     {
-        return ERR_FOPEN;
+        spu->file_name_input = "../../example_code/code.asm";
     }
 
-    spu->label = (LABELS *) calloc (LABEL_CNT, sizeof (LABELS));
-    my_assert (spu->label != NULL);
+    spu->file_name_print_bin = "../../example_code/ass_output.bin";
+    spu->file_name_print_txt = "../../example_code/ass_output.log";
 
-    return ERR_NO;
+    fopen_init_(spu->fp_print_bin, spu->file_name_print_bin, "w + b");
+    fopen_init_(spu->fp_print_txt, spu->file_name_print_txt, "w");
+
+    calloc_init_(spu->label, Labels *, LABEL_CNT, sizeof(Labels));
 }
 
-/**
- * Function that counts the number of commands.
- * @param[in] spu Structure containing all information
-*/
-
-void number_of_commands (SPU *spu)
+void number_of_commands (Spu *spu, int *code_error)
 {
-    my_assert (spu != NULL);
+    my_assert(spu != NULL, ERR_PTR);
 
     for (size_t ip = 0; ip <= spu->size_file; ip++)
     {
@@ -56,44 +43,18 @@ void number_of_commands (SPU *spu)
     }
 }
 
-/**
- * Function returning file size.
- * @param[in] stream Pointer to file
- * @param[out] size_file File size
-*/
-
-size_t get_file_size (FILE *stream)
+void spu_dtor (Spu *spu, int *code_error)
 {
-    my_assert (stream != NULL);
+    my_assert(spu != NULL, ERR_PTR)
 
-    size_t start = ftell (stream);
-    fseek (stream, start, SEEK_END);
-    size_t size_file = ftell (stream);
-    rewind (stream);
+    fclose_(spu->fp_print_txt);
+    fclose_(spu->fp_print_bin);
 
-    return size_file;
-}
+    free(spu->buf_input);
+    free(spu->buf_output);
+    free(spu->cmd);
+    free(spu->label);
 
-/**
- * Function that clears all variables.
- * @param[in] spu Structure containing all information
- * @param[out] code_error Returns the error code
-*/
-
-int spu_dtor (SPU *spu)
-{
-    my_assert (spu != NULL)
-
-    if (fclose (spu->fp_print_txt) != 0 || fclose (spu->fp_print_bin) != 0)
-    {
-        return ERR_FCLOSE;
-    }
-
-    free (spu->buf_input);
-    free (spu->buf_output);
-    free (spu->cmd);
-    free (spu->label);
-    
     spu->buf_input = NULL;
     spu->buf_output = NULL;
     spu->cmd = NULL;
@@ -105,6 +66,6 @@ int spu_dtor (SPU *spu)
 
     spu->n_cmd = VALUE_DEFAULT;
     spu->size_file = VALUE_DEFAULT;
-
-    return ERR_NO;
 }
+
+#endif // FUNC_ASS_CPP

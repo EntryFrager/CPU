@@ -1,0 +1,38 @@
+def main()
+{
+    input(a);
+
+    NO_FACT = 1;
+
+    c = 100000;
+
+    while (c > 0)
+    {
+        if (a < 0 || a == 0)
+        {
+            print(NO_FACT);
+        }
+        else
+        {
+            result = fact(a);
+
+            print(result);
+        }
+
+        c = c - 1;
+    }
+}
+
+def fact(n)
+{
+    if (n == 1)
+    {
+        return n;
+    }
+
+    b = n - 1;
+
+    n = n * fact(b);
+
+    return n;
+}
